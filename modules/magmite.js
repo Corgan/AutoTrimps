@@ -33,19 +33,19 @@ function miRatio() {
     capr = (cap > 0) ? ((cap / total)*100) : 1;
     supr = (sup > 0) ? ((sup / total)*100) : 1;
     ocr = (oc > 0) ? ((oc / total)*100) : 1;
-
+	
     //Find Player ratio
     effspend = (getPageSetting('effratio') > 0) ? getPageSetting('effratio') : 0;
     capspend = (getPageSetting('capratio') > 0) ? getPageSetting('capratio') : 0;
     supspend = (getPageSetting('supratio') > 0) ? getPageSetting('supratio') : 0;
     ocspend = (getPageSetting('ocratio') > 0) ? getPageSetting('ocratio') : 0;
-
+	
     var totalspend = (effspend + capspend + supspend + ocspend);
 
-    effspendr = (effspend > 0) ? ((totalspend / effspend)*100) : 0;
-    capspendr = (capspend > 0) ? ((totalspend / capspend)*100) : 0;
-    supspendr = (supspend > 0) ? ((totalspend / supspend)*100) : 0;
-    ocspendr = (ocspend > 0) ? ((totalspend / ocspend)*100) : 0;
+    effspendr = (effspend > 0) ? ((effspend / totalspend)*100) : 0;
+    capspendr = (capspend > 0) ? ((capspend / totalspend)*100) : 0;
+    supspendr = (supspend > 0) ? ((supspend / totalspend)*100) : 0;
+    ocspendr = (ocspend > 0) ? ((ocspend / totalspend)*100) : 0;
     
     //Find Next Spend
     var efffinal = effspendr - effr;
@@ -64,7 +64,7 @@ function miRatio() {
 	ratios.push(ocfinal);
 
     ratios.sort(function(a, b){return b-a;});
-
+	
     //Return Next Spend
     if (ratios[0] == efffinal)
 	return "Efficiency";
