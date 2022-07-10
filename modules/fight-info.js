@@ -169,7 +169,7 @@
 			if (cell.corrupted) {
 				$cell.title += " - " + mutationEffects[cell.corrupted].title;
 				
-				$cell.innerHTML = $cell.innerHTML + '<span class="'+mutationEffects[cell.corrupted].icon+'"></span>';
+				$cell.innerHTML = $cell.innerHTML + ' <span class="'+mutationEffects[cell.corrupted].icon+'"></span>';
 			}
 		}
 	}
