@@ -166,8 +166,11 @@
 
 			//Cell Titles
 			$cell.title = cell.name;
-			if (cell.corrupted && cell.corrupted.startsWith("corrupt"))
+			if (cell.corrupted) {
 				$cell.title += " - " + mutationEffects[cell.corrupted].title;
+				
+				$cell.innerHTML = $cell.innerHTML + "<span class="+mutationEffects[cell.corrupted].icon+"></span>";
+			}
 		}
 	}
 
