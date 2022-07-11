@@ -4,7 +4,7 @@ MODULES["portal"].bufferExceedFactor = 5;
 var portalzone = getPageSetting('CustomAutoPortal');
 var zonePostpone = 0;
 
-function autoPortal() {
+function async autoPortal() {
     if (!game.global.portalActive) return;
     switch (autoTrimpSettings.AutoPortal.selected) {
         case "Helium Per Hour":
@@ -36,9 +36,9 @@ function autoPortal() {
                         if (zonePostpone >= 2)
                             return;
                         if (autoTrimpSettings.HeliumHourChallenge.selected != 'None')
-                            doPortal(autoTrimpSettings.HeliumHourChallenge.selected);
+                            await doPortal(autoTrimpSettings.HeliumHourChallenge.selected);
                         else
-                            doPortal();
+                            await doPortal();
                     }, MODULES["portal"].timeout + 100);
                 }
             }
@@ -47,9 +47,9 @@ function autoPortal() {
             var portalzone = getPageSetting('CustomAutoPortal');
             if (game.global.world > portalzone) {
                 if (autoTrimpSettings.HeliumHourChallenge.selected != 'None')
-                    doPortal(autoTrimpSettings.HeliumHourChallenge.selected);
+                    await doPortal(autoTrimpSettings.HeliumHourChallenge.selected);
                 else
-                    doPortal();
+                    await doPortal();
             }
             break;
         case "Balance":
@@ -66,7 +66,7 @@ function autoPortal() {
         case "Corrupted":
         case "Domination":
             if (!game.global.challengeActive) {
-                doPortal(autoTrimpSettings.AutoPortal.selected);
+                await doPortal(autoTrimpSettings.AutoPortal.selected);
             }
             break;
         default:
@@ -74,7 +74,7 @@ function autoPortal() {
     }
 }
 
-function dailyAutoPortal() {
+function async dailyAutoPortal() {
     if (!game.global.portalActive) return;
     if (getPageSetting('AutoPortalDaily') == 1) {
         var OKtoPortal = false;
@@ -109,11 +109,11 @@ function dailyAutoPortal() {
                         document.getElementById('finishDailyBtnContainer').style.display = 'none';
                     }
                     if (autoTrimpSettings.dHeliumHourChallenge.selected != 'None' && getPageSetting('u1daily') == false)
-                        doPortal(autoTrimpSettings.dHeliumHourChallenge.selected);
+                        await doPortal(autoTrimpSettings.dHeliumHourChallenge.selected);
                     else if (autoTrimpSettings.RdHeliumHourChallenge.selected != 'None' && getPageSetting('u1daily') == true)
-                        doPortal(autoTrimpSettings.RdHeliumHourChallenge.selected);
+                        await doPortal(autoTrimpSettings.RdHeliumHourChallenge.selected);
                     else
-                        doPortal();
+                        await doPortal();
                 }, MODULES["portal"].timeout + 100);
             }
         }
@@ -124,23 +124,23 @@ function dailyAutoPortal() {
             abandonDaily();
             document.getElementById('finishDailyBtnContainer').style.display = 'none';
             if (autoTrimpSettings.dHeliumHourChallenge.selected != 'None' && getPageSetting('u1daily') == false)
-                doPortal(autoTrimpSettings.dHeliumHourChallenge.selected);
-	    else if (autoTrimpSettings.RdHeliumHourChallenge.selected != 'None' && getPageSetting('u1daily') == true)
-                doPortal(autoTrimpSettings.RdHeliumHourChallenge.selected);
+                await doPortal(autoTrimpSettings.dHeliumHourChallenge.selected);
+            else if (autoTrimpSettings.RdHeliumHourChallenge.selected != 'None' && getPageSetting('u1daily') == true)
+                await doPortal(autoTrimpSettings.RdHeliumHourChallenge.selected);
             else
-                doPortal();
+                await doPortal();
         }
     }
 }
 
-function c2runnerportal() {
+function async c2runnerportal() {
     if (game.global.world >= getPageSetting('c2runnerportal')) {
         if (game.global.runningChallengeSquared)
             abandonChallenge();
         if (autoTrimpSettings.HeliumHourChallenge.selected != 'None')
-            doPortal(autoTrimpSettings.HeliumHourChallenge.selected);
+            await doPortal(autoTrimpSettings.HeliumHourChallenge.selected);
         else
-            doPortal();
+            await doPortal();
     }
 }
 
@@ -205,7 +205,7 @@ function c2runner() {
     }
 }
 
-function doPortal(challenge) {
+function async doPortal(challenge) {
     var c2done = true;
     if (!game.global.portalActive) return;
     if (getPageSetting('spendmagmite')==1) {
@@ -235,8 +235,15 @@ function doPortal(challenge) {
     if (!portalWindowOpen) {
 	    portalClicked();
     }
-    if (portalWindowOpen && getPageSetting('AutoAllocatePerks')==1 && (typeof MODULES["perks"] !== 'undefined' || typeof AutoPerks !== 'undefined')) {
-        AutoPerks.clickAllocate();
+    //if (portalWindowOpen && getPageSetting('AutoAllocatePerks')==1 && (typeof MODULES["perks"] !== 'undefined' || typeof AutoPerks !== 'undefined')) {
+    //    AutoPerks.clickAllocate();
+    //}
+    if (portalWindowOpen && getPageSetting('AutoAllocatePerks')==1 && (typeof perkyImport !== 'undefined')) {
+        let perkString = await perkyImport({respec: true, preset: 'z450', zone: 510, 'weight-xp': 500});
+        console.log(perkString);
+        tooltip('Import Perks', null, 'update');
+        perkImportBox.value = perkString;
+        importPerks();
     }
     if (portalWindowOpen && getPageSetting('c2runnerstart')==true && getPageSetting('c2runnerportal') > 0 && getPageSetting('c2runnerpercent') > 0) {
         c2runner();
@@ -278,6 +285,7 @@ function doPortal(challenge) {
 	    buyPortalUpgrade('Looting_II');
 	    debug('Second Stage: Bought Max Looting II');
     }
+    return;
     pushData();
     activatePortal();
     lastHeliumZone = 0; zonePostpone = 0;

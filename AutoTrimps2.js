@@ -135,7 +135,7 @@ var magmiteSpenderChanged = false;
 var lastHeliumZone = 0;
 var lastRadonZone = 0;
 
-function mainLoop() {
+function async mainLoop() {
     if (ATrunning == false) return;
     if (getPageSetting('PauseScript') || game.options.menu.pauseGame.enabled || game.global.viewingUpgrades) return;
     ATrunning = true;
@@ -211,9 +211,9 @@ function mainLoop() {
         else if (getPageSetting('BuyJobsNew') == 2) buyJobs();
 
         //Portal
-        if (autoTrimpSettings.AutoPortal.selected != "Off" && game.global.challengeActive != "Daily" && !game.global.runningChallengeSquared) autoPortal();
-        if (getPageSetting('AutoPortalDaily') > 0 && game.global.challengeActive == "Daily") dailyAutoPortal();
-        if (getPageSetting('c2runnerstart') == true && getPageSetting('c2runnerportal') > 0 && game.global.runningChallengeSquared && getPageSetting('c2runnerportal')) c2runnerportal();
+        if (autoTrimpSettings.AutoPortal.selected != "Off" && game.global.challengeActive != "Daily" && !game.global.runningChallengeSquared) await autoPortal();
+        if (getPageSetting('AutoPortalDaily') > 0 && game.global.challengeActive == "Daily") await dailyAutoPortal();
+        if (getPageSetting('c2runnerstart') == true && getPageSetting('c2runnerportal') > 0 && game.global.runningChallengeSquared && getPageSetting('c2runnerportal')) await c2runnerportal();
     
         //Combat
         if (getPageSetting('ForceAbandon') == true || getPageSetting('fuckanti') > 0) trimpcide();
