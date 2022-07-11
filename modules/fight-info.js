@@ -104,7 +104,7 @@
 			iconList.push('<span class="'+mutationEffects[cell.corrupted].icon+'"></span>');
 
 		//Icon Overriding
-		if (cell.special.length == 0 || overrideSpecial && replaceable.includes(cell.special))
+		if (cell.special && game.worldUnlocks[cell.special])
 			iconList.push(convertUnlockIconToSpan(game.worldUnlocks[cell.special].icon));
 
 		if(iconList.length != 0)
