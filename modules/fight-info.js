@@ -89,17 +89,26 @@
 
 	function updateCell($cell, cell, pallet, customIcon, overrideSpecial, overrideCoords) {
 		//Cell Color
-		if (M.fightinfo.changeCellColor) $cell.style.color = pallet.color;
-		$cell.style.textShadow = pallet.shadow;
+		//if (M.fightinfo.changeCellColor) $cell.style.color = pallet.color;
+		//$cell.style.textShadow = pallet.shadow;
+
+		let iconList = [];
 
 		//Glyph Icon
 		var icon = (customIcon) ? customIcon : pallet.icon
-		var replaceable = ["fruit", "Metal", "gems", "freeMetals", "groundLumber", "Wood", "Map", "Any"]
-		if (overrideCoords) replaceable.push("Coordination");
+		iconList.push('<span class='+icon+'></span>');
+		//var replaceable = ["fruit", "Metal", "gems", "freeMetals", "groundLumber", "Wood", "Map", "Any"]
+		//if (overrideCoords) replaceable.push("Coordination");
+				
+		if(cell.corrupted != "none")
+			iconList.push('<span class="'+mutationEffects[cell.corrupted].icon+'"></span>');
 
 		//Icon Overriding
-		if (cell.special.length == 0 || overrideSpecial && replaceable.includes(cell.special) )
-			$cell.innerHTML = "<span class="+icon+"></span>";
+		if (cell.special.length == 0 || overrideSpecial && replaceable.includes(cell.special))
+			iconList.push(convertUnlockIconToSpan(game.worldUnlocks[cell.special].icon));
+
+		if(iconList.length != 0)
+			$cell.innerHTML = iconList.join(' ');
 	}
 
 	function Update() {
@@ -166,11 +175,9 @@
 
 			//Cell Titles
 			$cell.title = cell.name;
-			if (cell.corrupted) {
+			
+			if (cell.corrupted)
 				$cell.title += " - " + mutationEffects[cell.corrupted].title;
-				
-				$cell.innerHTML = $cell.innerHTML + ' <span class="'+mutationEffects[cell.corrupted].icon+'"></span>';
-			}
 		}
 	}
 
