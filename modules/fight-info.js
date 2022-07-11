@@ -105,7 +105,10 @@
 
 		//Icon Overriding
 		if (cell.special && game.worldUnlocks[cell.special])
-			iconList.push(convertUnlockIconToSpan(game.worldUnlocks[cell.special].icon));
+			iconList.push(convertUnlockIconToSpan(game.worldUnlocks[cell.special]));
+
+		if (cell.special && game.mapUnlocks[cell.special])
+			iconList.push(convertUnlockIconToSpan(game.mapUnlocks[cell.special]));
 
 		if(iconList.length != 0)
 			$cell.innerHTML = iconList.join(' ');
