@@ -95,9 +95,11 @@
 		let iconList = [];
 
 		//Glyph Icon
-		var icon = (customIcon) ? customIcon : pallet.icon;
-		if(icon)
-			iconList.push('<span class='+icon+'></span>');
+		if(customIcon || pallet) {
+			let icon = (customIcon) ? customIcon : pallet.icon;
+			if(icon)
+				iconList.push('<span class='+icon+'></span>');
+		}
 		//var replaceable = ["fruit", "Metal", "gems", "freeMetals", "groundLumber", "Wood", "Map", "Any"]
 		//if (overrideCoords) replaceable.push("Coordination");
 
