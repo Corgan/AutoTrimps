@@ -100,7 +100,7 @@
 		//var replaceable = ["fruit", "Metal", "gems", "freeMetals", "groundLumber", "Wood", "Map", "Any"]
 		//if (overrideCoords) replaceable.push("Coordination");
 				
-		if(cell.corrupted != "none")
+		if(cell.corrupted && cell.corrupted != "none")
 			iconList.push('<span class="'+mutationEffects[cell.corrupted].icon+'"></span>');
 
 		//Icon Overriding
