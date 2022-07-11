@@ -95,8 +95,9 @@
 		let iconList = [];
 
 		//Glyph Icon
-		var icon = (customIcon) ? customIcon : pallet.icon
-		iconList.push('<span class='+icon+'></span>');
+		var icon = (customIcon) ? customIcon : pallet.icon;
+		if(icon)
+			iconList.push('<span class='+icon+'></span>');
 		//var replaceable = ["fruit", "Metal", "gems", "freeMetals", "groundLumber", "Wood", "Map", "Any"]
 		//if (overrideCoords) replaceable.push("Coordination");
 
@@ -174,6 +175,10 @@
 			//Ice Token
 			else if (cell.name.toLowerCase().indexOf('ice') > -1) {
 				updateCell($cell, cell, M.fightinfo.imp.ice);
+			}
+			
+			else {
+				updateCell($cell, cell);
 			}
 
 			//Cell Titles
