@@ -23,7 +23,7 @@
 	//Powerful imps
 	M["fightinfo"].powerful = {
 		blimp          : {name: "Blimp",          icon: '"glyphicon glyphicon-plane"'        },
-		cthulimp       : {name: "Cthulimp",       icon: '"icomoon icon-archive"'             },
+		cthulimp       : {name: "Cthulimp",       icon: '"icomoon icon-hipster"'             },
 		improbability  : {name: "Improbability",  icon: '"glyphicon glyphicon-question-sign"'},
 		omnipotrimp    : {name: "Omnipotrimp",    icon: '"glyphicon glyphicon-fire"'         },
 		mutimp         : {name: "Mutimp",         icon: '"glyphicon glyphicon-menu-up"'      },
