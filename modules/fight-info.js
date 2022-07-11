@@ -70,24 +70,7 @@
 	M["fightinfo"].lastProcessedWorld = null;
 	M["fightinfo"].lastProcessedMap = null;
 
-	function identifyCell(cell) {//TODO What was this for anyway? I forgot. I think it was needed to fix nature icons?
-		//Init
-		var tags = [];
-		var name = cell.name.toLowerCase();
-
-		//Skeletimp
-		if (name.includes("skeletimp"))   tags.push("skeletimp");
-
-		//Exotics
-		if (name in M.fightinfo.exotics) tags.push("exotic")
-
-		//Nature
-		if (name.startsWith("poison")) tags.push("poison");
-		if (name.startsWith("wind"))   tags.push("wind");
-		if (name.startsWith("ice"))    tags.push("ice");
-	}
-
-	function updateCell($cell, cell, pallet, customIcon, overrideSpecial, overrideCoords) {
+	function updateCell($cell, cell, pallet, customIcon) {
 		//Cell Color
 		//if (M.fightinfo.changeCellColor) $cell.style.color = pallet.color;
 		//$cell.style.textShadow = pallet.shadow;
@@ -109,7 +92,7 @@
 
 		if (cell.special && game.mapUnlocks[cell.special])
 			iconList.push(convertUnlockIconToSpan(game.mapUnlocks[cell.special]));
-				
+		
 		if(cell.corrupted && cell.corrupted != "none")
 			iconList.push('<span class="'+mutationEffects[cell.corrupted].icon+'"></span>');
 
@@ -150,13 +133,13 @@
 			//Exotic cell
 			else if (cell.name.toLowerCase() in M["fightinfo"].exotics) {
 				let icon = M.fightinfo.allExoticIcons ? M.fightinfo.exotics[cell.name.toLowerCase()].icon : undefined;
-				updateCell($cell, cell, M.fightinfo.imp.exotic, icon, true);
+				updateCell($cell, cell, M.fightinfo.imp.exotic, icon);
 			}
 
 			//Powerful Imp
 			else if (cell.name.toLowerCase() in M["fightinfo"].powerful) {
 				let icon = M.fightinfo.allPowerfulIcons ? M.fightinfo.powerful[cell.name.toLowerCase()].icon : undefined;
-				updateCell($cell, cell, M.fightinfo.imp.powerful, icon, M.fightinfo.allPowerfulIcons, true);
+				updateCell($cell, cell, M.fightinfo.imp.powerful, icon);
 			}
 
 			//Fast Imp
@@ -165,17 +148,17 @@
 			}
 
 			//This shit doesn't work and I don't know why (What is the cell.title??? is it the name of the nature? Imps are labelled Toxic/Gusty/Frozen but that didn't work either)
-			else if (cell.name.toLowerCase().indexOf('poison') > -1) {
+			else if (cell.empowerment == "Poison") {
 				updateCell($cell, cell, M.fightinfo.imp.poison);
 			}
 
 			//Wind Token
-			else if (cell.name.toLowerCase().indexOf('wind') > -1) {
+			else if (cell.empowerment == "Wind") {
 				updateCell($cell, cell, M.fightinfo.imp.wind);
 			}
 
 			//Ice Token
-			else if (cell.name.toLowerCase().indexOf('ice') > -1) {
+			else if (cell.empowerment == "Ice") {
 				updateCell($cell, cell, M.fightinfo.imp.ice);
 			}
 			
