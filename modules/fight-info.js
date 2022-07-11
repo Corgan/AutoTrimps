@@ -114,7 +114,7 @@
 				prefix =  "icomoon icon-"
 			}
 			else prefix = "glyphicon glyphicon-";
-		return '<span ' + title + 'class="' + prefix + icon  + ' ' + addClass '"></span>';
+		return '<span ' + title + 'class="' + prefix + icon  + ' ' + addClass + '"></span>';
 	}
 
 	function Update() {
