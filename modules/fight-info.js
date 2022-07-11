@@ -99,9 +99,6 @@
 		iconList.push('<span class='+icon+'></span>');
 		//var replaceable = ["fruit", "Metal", "gems", "freeMetals", "groundLumber", "Wood", "Map", "Any"]
 		//if (overrideCoords) replaceable.push("Coordination");
-				
-		if(cell.corrupted && cell.corrupted != "none")
-			iconList.push('<span class="'+mutationEffects[cell.corrupted].icon+'"></span>');
 
 		//Icon Overriding
 		if (cell.special && game.worldUnlocks[cell.special])
@@ -109,6 +106,9 @@
 
 		if (cell.special && game.mapUnlocks[cell.special])
 			iconList.push(convertUnlockIconToSpan(game.mapUnlocks[cell.special]));
+				
+		if(cell.corrupted && cell.corrupted != "none")
+			iconList.push('<span class="'+mutationEffects[cell.corrupted].icon+'"></span>');
 
 		if(iconList.length != 0)
 			$cell.innerHTML = iconList.join(' ');
