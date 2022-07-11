@@ -88,16 +88,33 @@
 
 		//Icon Overriding
 		if (cell.special && game.worldUnlocks[cell.special])
-			iconList.push(convertUnlockIconToSpan(game.worldUnlocks[cell.special]));
+			iconList.push(unlock2span(game.worldUnlocks[cell.special]));
 
 		if (cell.special && game.mapUnlocks[cell.special])
-			iconList.push(convertUnlockIconToSpan(game.mapUnlocks[cell.special]));
+			iconList.push(unlock2span(game.mapUnlocks[cell.special]));
 		
 		if(cell.corrupted && cell.corrupted != "none")
 			iconList.push('<span class="'+mutationEffects[cell.corrupted].icon+'"></span>');
 
 		if(iconList.length != 0)
 			$cell.innerHTML = iconList.join(' ');
+	}
+
+	function unlock2span(special) {
+		var title = "";
+		if (special.title) title = "title='" + special.title + "' ";
+		
+		var addClass = "";
+		if (special.addClass) addClass = (typeof special.addClass === 'function') ? special.addClass() : special.addClass;
+
+		var prefix = "";
+		var icon = special.icon;
+			if (icon && icon.charAt(0) == "*") {
+				icon = icon.replace("*", "");
+				prefix =  "icomoon icon-"
+			}
+			else prefix = "glyphicon glyphicon-";
+		return '<span ' + title + 'class="' + prefix + icon  + ' ' + addClass '"></span>';
 	}
 
 	function Update() {
