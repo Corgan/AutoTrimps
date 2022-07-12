@@ -4,7 +4,7 @@ MODULES["portal"].bufferExceedFactor = 5;
 var portalzone = getPageSetting('CustomAutoPortal');
 var zonePostpone = 0;
 
-function async autoPortal() {
+async function autoPortal() {
     if (!game.global.portalActive) return;
     switch (autoTrimpSettings.AutoPortal.selected) {
         case "Helium Per Hour":
@@ -74,7 +74,7 @@ function async autoPortal() {
     }
 }
 
-function async dailyAutoPortal() {
+async function dailyAutoPortal() {
     if (!game.global.portalActive) return;
     if (getPageSetting('AutoPortalDaily') == 1) {
         var OKtoPortal = false;
@@ -133,7 +133,7 @@ function async dailyAutoPortal() {
     }
 }
 
-function async c2runnerportal() {
+async function c2runnerportal() {
     if (game.global.world >= getPageSetting('c2runnerportal')) {
         if (game.global.runningChallengeSquared)
             abandonChallenge();
@@ -205,7 +205,7 @@ function c2runner() {
     }
 }
 
-function async doPortal(challenge) {
+async function doPortal(challenge) {
     var c2done = true;
     if (!game.global.portalActive) return;
     if (getPageSetting('spendmagmite')==1) {
