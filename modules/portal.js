@@ -240,7 +240,6 @@ async function doPortal(challenge) {
     //}
     if (portalWindowOpen && getPageSetting('AutoAllocatePerks')==1 && (typeof perkyImport !== 'undefined')) {
         let perkString = await perkyImport({respec: true, preset: 'z450', zone: 510, 'weight-xp': 500});
-        console.log(perkString);
         tooltip('Import Perks', null, 'update');
         perkImportBox.value = perkString;
         importPerks();
@@ -285,7 +284,6 @@ async function doPortal(challenge) {
 	    buyPortalUpgrade('Looting_II');
 	    debug('Second Stage: Bought Max Looting II');
     }
-    return;
     pushData();
     activatePortal();
     lastHeliumZone = 0; zonePostpone = 0;
