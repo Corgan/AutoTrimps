@@ -32,7 +32,7 @@ async function autoPortal() {
                     cancelTooltip();
                     tooltip('confirm', null, 'update', '<b>Auto Portaling NOW!</b><p>Hit Delay Portal to WAIT 1 more zone.', 'zonePostpone+=1', '<b>NOTICE: Auto-Portaling in 5 seconds....</b>', 'Delay Portal');
                     setTimeout(cancelTooltip, MODULES["portal"].timeout);
-                    setTimeout(function() {
+                    setTimeout(async function() {
                         if (zonePostpone >= 2)
                             return;
                         if (autoTrimpSettings.HeliumHourChallenge.selected != 'None')
@@ -101,7 +101,7 @@ async function dailyAutoPortal() {
                 cancelTooltip();
                 tooltip('confirm', null, 'update', '<b>Auto Portaling NOW!</b><p>Hit Delay Portal to WAIT 1 more zone.', 'zonePostpone+=1', '<b>NOTICE: Auto-Portaling in 5 seconds....</b>', 'Delay Portal');
                 setTimeout(cancelTooltip, MODULES["portal"].timeout);
-                setTimeout(function() {
+                setTimeout(async function() {
                     if (zonePostpone >= 2)
                         return;
                     if (OKtoPortal) {
@@ -353,7 +353,7 @@ function RautoPortal() {
                     cancelTooltip();
                     tooltip('confirm', null, 'update', '<b>Auto Portaling NOW!</b><p>Hit Delay Portal to WAIT 1 more zone.', 'zonePostpone+=1', '<b>NOTICE: Auto-Portaling in 5 seconds....</b>', 'Delay Portal');
                     setTimeout(cancelTooltip, MODULES["portal"].Rtimeout);
-                    setTimeout(function() {
+                    setTimeout(async function() {
                         if (zonePostpone >= 2)
                             return;
                         if (autoTrimpSettings.RadonHourChallenge.selected != 'None')
@@ -415,7 +415,7 @@ function RdailyAutoPortal() {
                     cancelTooltip();
                     tooltip('confirm', null, 'update', '<b>Auto Portaling NOW!</b><p>Hit Delay Portal to WAIT 1 more zone.', 'zonePostpone+=1', '<b>NOTICE: Auto-Portaling in 5 seconds....</b>', 'Delay Portal');
                     setTimeout(cancelTooltip, MODULES["portal"].Rtimeout);
-                    setTimeout(function() {
+                    setTimeout(async function() {
                         if (zonePostpone >= 2)
                             return;
                         if (OKtoPortal) {
