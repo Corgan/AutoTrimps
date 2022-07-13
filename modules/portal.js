@@ -239,7 +239,7 @@ async function doPortal(challenge) {
     //    AutoPerks.clickAllocate();
     //}
     if (portalWindowOpen && getPageSetting('AutoAllocatePerks')==1 && (typeof perkyImport !== 'undefined')) {
-        let perkString = await perkyImport({respec: true, preset: 'z450', zone: 510, 'weight-xp': 500});
+        let perkString = await perkyImport(perkyConfig || {});
         tooltip('Import Perks', null, 'update');
         perkImportBox.value = perkString;
         importPerks();
