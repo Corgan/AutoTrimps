@@ -74,7 +74,7 @@ function safeFireJob(job, amount) {
 
 function buyJobs() {
     var freeWorkers = Math.ceil(game.resources.trimps.realMax() / 2) - game.resources.trimps.employed;
-    var breeding = (game.resources.trimps.owned - trimpsEffectivelyEmployed());
+    var breeding = (game.resources.trimps.owned - game.resources.trimps.employed);
     var totalDistributableWorkers = freeWorkers + game.jobs.Farmer.owned + game.jobs.Miner.owned + game.jobs.Lumberjack.owned;
     var farmerRatio = parseFloat(getPageSetting('FarmerRatio'));
     var lumberjackRatio = parseFloat(getPageSetting('LumberjackRatio'));
@@ -89,15 +89,18 @@ function buyJobs() {
     }
 
     if (game.global.world == 1 && game.global.totalHeliumEarned <= 5000) {
-        if (game.resources.food.owned > 5 && freeWorkers > 0) {
-            if (!game.jobs.Scientist.locked && game.jobs.Scientist.owned < 2 && getPageSetting('MaxScientists') != 0)
-                safeBuyJob('Scientist', 1);
-            else if (!game.jobs.Miner.locked && game.jobs.Miner.owned < game.jobs.Lumberjack.owned)
-                safeBuyJob('Miner', 1);
-            else if (!game.jobs.Lumberjack.locked && game.jobs.Lumberjack.owned < game.jobs.Farmer.owned)
-                safeBuyJob('Lumberjack', 1);
-            else
-                safeBuyJob('Farmer', 1);
+        if (game.resources.trimps.owned < game.resources.trimps.realMax() * 0.9) {
+            if (game.resources.food.owned > 5 && freeWorkers > 0) {
+                if (game.jobs.Farmer.owned == game.jobs.Lumberjack.owned)
+                    safeBuyJob('Farmer', 1);
+                else if (game.jobs.Farmer.owned > game.jobs.Lumberjack.owned && !game.jobs.Lumberjack.locked)
+                    safeBuyJob('Lumberjack', 1);
+            }
+            freeWorkers = Math.ceil(game.resources.trimps.realMax() / 2) - game.resources.trimps.employed;
+            if (game.resources.food.owned > 20 && freeWorkers > 0) {
+                if (game.jobs.Farmer.owned == game.jobs.Lumberjack.owned && !game.jobs.Miner.locked && game.global.challengeActive != "Metal")
+                    safeBuyJob('Miner', 1);
+            }
         }
         return;
     } else if (game.jobs.Farmer.owned == 0 && game.jobs.Lumberjack.locked && freeWorkers > 0) {
@@ -120,11 +123,14 @@ function buyJobs() {
                 return;
         }
     } else {
+        var breeding = (game.resources.trimps.owned - game.resources.trimps.employed);
         if (!(game.global.challengeActive == "Trapper") && game.resources.trimps.owned < game.resources.trimps.realMax() * 0.9 && !breedFire) {
             if (breeding > game.resources.trimps.realMax() * 0.33) {
                 freeWorkers = Math.ceil(game.resources.trimps.realMax() / 2) - game.resources.trimps.employed;
                 if (freeWorkers > 0 && game.resources.trimps.realMax() <= 3e5) {
-                    if (!game.jobs.Miner.locked) safeBuyJob('Miner', 1);
+                    if (game.global.challengeActive != "Metal") {
+                        safeBuyJob('Miner', 1);
+                    }
                     safeBuyJob('Farmer', 1);
                     safeBuyJob('Lumberjack', 1);
                 }
@@ -188,23 +194,19 @@ function buyJobs() {
         } else
             return false;
     }
-
-    //FLM according to ratio, except when doing Trapper challenge (according to settings)
-    if (game.global.challengeActive != "Trapper" || !getPageSetting("buynojobsc")) {
-        ratiobuy('Farmer', farmerRatio);
-        if (!ratiobuy('Miner', minerRatio) && breedFire && game.global.turkimpTimer === 0)
-            safeBuyJob('Miner', game.jobs.Miner.owned * -1);
-        if (!ratiobuy('Lumberjack', lumberjackRatio) && breedFire)
-            safeBuyJob('Lumberjack', game.jobs.Lumberjack.owned * -1);
-    }
+    ratiobuy('Farmer', farmerRatio);
+    if (!ratiobuy('Miner', minerRatio) && breedFire && game.global.turkimpTimer === 0 && game.global.challengeActive != "Metal")
+        safeBuyJob('Miner', game.jobs.Miner.owned * -1);
+    if (!ratiobuy('Lumberjack', lumberjackRatio) && breedFire)
+        safeBuyJob('Lumberjack', game.jobs.Lumberjack.owned * -1);
 
     if (game.jobs.Magmamancer.locked) return;
     var timeOnZone = Math.floor((new Date().getTime() - game.global.zoneStarted) / 60000);
     if (game.talents.magmamancer.purchased) {
         timeOnZone += 5;
     }
-    if (game.talents.stillMagmamancer.purchased){
-		timeOnZone = Math.floor(timeOnZone + game.global.spireRows);
+    if (game.talents.stillMagmamancer.purchased) {
+        timeOnZone = Math.floor(timeOnZone + game.global.spireRows);
     }
     var stacks2 = Math.floor(timeOnZone / 10);
     if (getPageSetting('AutoMagmamancers') && stacks2 > tierMagmamancers) {
@@ -377,97 +379,93 @@ function RworkerRatios() {
 }
 
 function RquestbuyJobs() {
-	
+
     var freeWorkers = Math.ceil(game.resources.trimps.realMax() / 2) - game.resources.trimps.employed;
     var totalDistributableWorkers = freeWorkers + game.jobs.Farmer.owned + game.jobs.Miner.owned + game.jobs.Lumberjack.owned;
+    totalDistributableWorkers = totalDistributableWorkers / 5;
 
     var farmerRatio = 0;
     var lumberjackRatio = 0;
     var minerRatio = 0;
     var scientistNumber = (totalDistributableWorkers * 0.00001);
     if (scientistNumber <= 0) {
-	scientistNumber = 1;
-    }
-	
-    if (game.global.world > 5) {
-	if (questcheck() == 7 && !canAffordBuilding('Smithy')) {
-	    farmerRatio = 10;
-	    lumberjackRatio = 10;
-	    minerRatio = 10;
-	}
-	if (questcheck() == 10 || questcheck() == 20) {
-            farmerRatio = 10;
-        }
-        if (questcheck() == 11 || questcheck() == 21) {
-            lumberjackRatio = 10;
-        }
-        if (questcheck() == 12 || questcheck() == 22) {
-            minerRatio = 10;
-        }
-	if (questcheck() == 14 || questcheck() == 24) {
-	    scientistNumber = (totalDistributableWorkers * 0.5);
-	}
+        scientistNumber = 1;
     }
 
-    freeWorkers = Math.ceil(game.resources.trimps.realMax() / 2) - game.resources.trimps.employed;
-    totalDistributableWorkers = freeWorkers + game.jobs.Farmer.owned + game.jobs.Miner.owned + game.jobs.Lumberjack.owned;
-	
+    if (game.global.world > 5) {
+        if (questcheck() == 7 && !canAffordBuilding('Smithy')) {
+            farmerRatio = 10;
+            lumberjackRatio = 10;
+            minerRatio = 10;
+            totalDistributableWorkers *= 5;
+        }
+        else if (questcheck() == 10 || questcheck() == 20) {
+            farmerRatio = 10;
+            totalDistributableWorkers *= 5;
+        }
+        else if (questcheck() == 11 || questcheck() == 21) {
+            lumberjackRatio = 10;
+            totalDistributableWorkers *= 5;
+        }
+        else if (questcheck() == 12 || questcheck() == 22) {
+            minerRatio = 10;
+            totalDistributableWorkers *= 5;
+        }
+        else if (questcheck() == 14 || questcheck() == 24) {
+            totalDistributableWorkers *= 5;
+            scientistNumber = (totalDistributableWorkers * 0.5);
+        }
+        else {
+            farmerRatio = 10;
+            lumberjackRatio = 10;
+            minerRatio = 10;
+        }
+    }
+
     if (scientistNumber > (totalDistributableWorkers * 0.00001) && !game.jobs.Scientist.locked) {
         if (freeWorkers > 0 && scientistNumber > game.jobs.Scientist.owned) {
             var n = scientistNumber - game.jobs.Scientist.owned;
             RsafeBuyJob('Scientist', n);
         }
+    } else if (game.jobs.Scientist.owned > scientistNumber && !game.jobs.Scientist.locked) {
+        var n = game.jobs.Scientist.owned - scientistNumber;
+        RsafeFireJob('Scientist', n);
     }
-    else if (game.jobs.Scientist.owned > scientistNumber && !game.jobs.Scientist.locked) {
-	var n = game.jobs.Scientist.owned - scientistNumber;
-	RsafeFireJob('Scientist', n);
-    }
-	
+
     if (getPageSetting('RMaxExplorers') > game.jobs.Explorer.owned || getPageSetting('RMaxExplorers') == -1) {
         RsafeBuyJob("Explorer", 1);
     }
-	
-    freeWorkers = Math.ceil(game.resources.trimps.realMax() / 2) - game.resources.trimps.employed;
-    totalDistributableWorkers = freeWorkers + game.jobs.Farmer.owned + game.jobs.Miner.owned + game.jobs.Lumberjack.owned;
-	
+
     var farmerkeep = totalDistributableWorkers * 0.01;
     if (farmerkeep < 1) {
-	farmerkeep = 100;
-	if (totalDistributableWorkers <= 100) {
-	    farmerkeep = 1;
-	}
+        farmerkeep = 100;
+        if (totalDistributableWorkers <= 100) {
+            farmerkeep = 1;
+        }
     }
 
     totalDistributableWorkers = totalDistributableWorkers - farmerkeep;
-	
+
     if (farmerRatio > 0 && lumberjackRatio <= 0 && minerRatio <= 0) {
-	RsafeFireJob('Lumberjack', game.jobs.Lumberjack.owned);
-	RsafeFireJob('Miner', game.jobs.Miner.owned);
-	RsafeBuyJob('Farmer', totalDistributableWorkers);
-    }
-	
-    else if (lumberjackRatio > 0 && farmerRatio <= 0 && minerRatio <= 0) {
-	RsafeFireJob('Farmer', game.jobs.Farmer.owned - farmerkeep);
-	RsafeFireJob('Miner', game.jobs.Miner.owned);
-	RsafeBuyJob('Lumberjack', totalDistributableWorkers);
-    }
-	
-    else if (minerRatio > 0 && farmerRatio <= 0 && lumberjackRatio <= 0) {
-	RsafeFireJob('Farmer', game.jobs.Farmer.owned - farmerkeep);
-	RsafeFireJob('Lumberjack', game.jobs.Lumberjack.owned);
-	RsafeBuyJob('Miner', totalDistributableWorkers);
-    }
-
-    else if (farmerRatio <= 0 && lumberjackRatio <= 0 && minerRatio <= 0) {
-	RsafeFireJob('Farmer', game.jobs.Farmer.owned - farmerkeep);
-	RsafeFireJob('Lumberjack', game.jobs.Lumberjack.owned);
-	RsafeFireJob('Miner', game.jobs.Miner.owned);
-    }
-
-    else if (farmerRatio > 0 && lumberjackRatio > 0 && minerRatio > 0) {
-	RsafeBuyJob('Farmer', totalDistributableWorkers * 0.15);
-	RsafeBuyJob('Lumberjack', totalDistributableWorkers * 0.35);
-	RsafeBuyJob('Miner', totalDistributableWorkers * 0.45);
+        RsafeFireJob('Lumberjack', game.jobs.Lumberjack.owned);
+        RsafeFireJob('Miner', game.jobs.Miner.owned);
+        RsafeBuyJob('Farmer', totalDistributableWorkers);
+    } else if (lumberjackRatio > 0 && farmerRatio <= 0 && minerRatio <= 0) {
+        RsafeFireJob('Farmer', game.jobs.Farmer.owned - farmerkeep);
+        RsafeFireJob('Miner', game.jobs.Miner.owned);
+        RsafeBuyJob('Lumberjack', totalDistributableWorkers);
+    } else if (minerRatio > 0 && farmerRatio <= 0 && lumberjackRatio <= 0) {
+        RsafeFireJob('Farmer', game.jobs.Farmer.owned - farmerkeep);
+        RsafeFireJob('Lumberjack', game.jobs.Lumberjack.owned);
+        RsafeBuyJob('Miner', totalDistributableWorkers);
+    } else if (farmerRatio <= 0 && lumberjackRatio <= 0 && minerRatio <= 0) {
+        RsafeFireJob('Farmer', game.jobs.Farmer.owned - farmerkeep);
+        RsafeFireJob('Lumberjack', game.jobs.Lumberjack.owned);
+        RsafeFireJob('Miner', game.jobs.Miner.owned);
+    } else if (farmerRatio > 0 && lumberjackRatio > 0 && minerRatio > 0) {
+        RsafeBuyJob('Farmer', totalDistributableWorkers * 0.15);
+        RsafeBuyJob('Lumberjack', totalDistributableWorkers * 0.35);
+        RsafeBuyJob('Miner', totalDistributableWorkers * 0.45);
     }
 }
 
@@ -497,8 +495,8 @@ function RbuyJobs() {
             var buyAmountStore = game.global.buyAmt;
             game.global.buyAmt = affordableExplorers;
 
-            buyJob('Explorer',true, true);
-            
+            buyJob('Explorer', true, true);
+
             freeWorkers -= affordableExplorers;
             game.global.buyAmt = buyAmountStore;
         }
@@ -516,8 +514,8 @@ function RbuyJobs() {
         var buyAmountStore = game.global.buyAmt;
         game.global.buyAmt = affordableMets;
 
-        buyJob('Meteorologist',true, true);
-        
+        buyJob('Meteorologist', true, true);
+
         freeWorkers -= affordableMets;
         game.global.buyAmt = buyAmountStore;
     }
@@ -528,8 +526,8 @@ function RbuyJobs() {
         var buyAmountStore = game.global.buyAmt;
         game.global.buyAmt = affordableShips;
 
-        buyJob('Worshipper',true, true);
-        
+        buyJob('Worshipper', true, true);
+
         freeWorkers -= affordableShips;
         game.global.buyAmt = buyAmountStore;
     }
@@ -542,28 +540,65 @@ function RbuyJobs() {
         currentworkers.push(game.jobs[worker].owned);
     }
 
-    freeWorkers += currentworkers.reduce((a,b) => {return a + b;});
-	
-    freeWorkers -= (game.resources.trimps.owned > 1e6) ? reservedJobs : 0;
+    freeWorkers += currentworkers.reduce((a, b) => {
+        return a + b;
+    });
+
+    // Explicit firefox handling because Ff specifically reduces free workers to 0.
+    var isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+
+    var reserveMod = isFirefox || typeof(isSteam) !== 'undefined' ? 1 + (game.resources.trimps.owned / 1e10) : 1;
+
+    freeWorkers -= (game.resources.trimps.owned > 1e6) ? reservedJobs * reserveMod : 0;
 
     // Calculate how much of each worker we should have
     // If focused farming go all in for caches
     var allIn = "";
-    if (Rshouldtimefarmbogs || Rshouldtimefarm) {
-        if (autoTrimpSettings.Rtimespecialselection.selected.includes('wc')) {
+    if (Rshouldtimefarm) {
+        var timefarmzone = getPageSetting('Rtimefarmzone');
+        var timefarmlevelindex = timefarmzone.indexOf(game.global.world);
+        if (autoTrimpSettings.Rtimefarmspecial.value[timefarmlevelindex].includes('wc')) {
             allIn = "Lumberjack";
-        } else if (autoTrimpSettings.Rtimespecialselection.selected.includes('sc')) {
+        } else if (autoTrimpSettings.Rtimefarmspecial.value[timefarmlevelindex].includes('sc')) {
             allIn = "Farmer";
-        } else if (autoTrimpSettings.Rtimespecialselection.selected.includes('mc')) {
+        } else if (autoTrimpSettings.Rtimefarmspecial.value[timefarmlevelindex].includes('mc')) {
             allIn = "Miner";
-        } else if (autoTrimpSettings.Rtimespecialselection.selected.includes('rc')) {
+        } else if (autoTrimpSettings.Rtimefarmspecial.value[timefarmlevelindex].includes('rc')) {
+            allIn = "Scientist";
+        }
+    }
+    if (Rdshouldtimefarm) {
+        var dtimefarmzone = getPageSetting('Rdtimefarmzone');
+        var dtimefarmlevelindex = dtimefarmzone.indexOf(game.global.world);
+        if (autoTrimpSettings.Rdtimefarmspecial.value[dtimefarmlevelindex].includes('wc')) {
+            allIn = "Lumberjack";
+        } else if (autoTrimpSettings.Rdtimefarmspecial.value[dtimefarmlevelindex].includes('sc')) {
+            allIn = "Farmer";
+        } else if (autoTrimpSettings.Rdtimefarmspecial.value[dtimefarmlevelindex].includes('mc')) {
+            allIn = "Miner";
+        } else if (autoTrimpSettings.Rdtimefarmspecial.value[dtimefarmlevelindex].includes('rc')) {
+            allIn = "Scientist";
+        }
+    }
+    if (Rshouldtributefarm) {
+        var tributefarmzone = getPageSetting('Rtributefarmzone');
+        var tributefarmlevelindex = tributefarmzone.indexOf(game.global.world);
+        if (autoTrimpSettings.Rtributespecialselection.value[tributefarmlevelindex].includes('wc')) {
+            allIn = "Lumberjack";
+        } else if (autoTrimpSettings.Rtributespecialselection.value[tributefarmlevelindex].includes('sc')) {
+            allIn = "Farmer";
+        } else if (autoTrimpSettings.Rtributespecialselection.value[tributefarmlevelindex].includes('mc')) {
+            allIn = "Miner";
+        } else if (autoTrimpSettings.Rtributespecialselection.value[tributefarmlevelindex].includes('rc')) {
             allIn = "Scientist";
         }
     }
     if (Rshouldshipfarm) {
-	allIn = "Farmer";
+        allIn = "Farmer";
+    } else if (Rshouldhypofarm) {
+        allIn = "Lumberjack";
     }
-    var desiredRatios = [0,0,0,0];
+    var desiredRatios = [0, 0, 0, 0];
     if (allIn != "") {
         desiredRatios[ratioWorkers.indexOf(allIn)] = 1;
     } else {
@@ -582,7 +617,7 @@ function RbuyJobs() {
         for (var worker of ratioWorkers) {
             if (!game.jobs[worker].locked) {
 
-                if (worker == "Scientist"){
+                if (worker == "Scientist") {
                     desiredRatios[ratioWorkers.indexOf(worker)] = 1;
                     continue;
                 }
@@ -593,9 +628,11 @@ function RbuyJobs() {
         }
     }
 
-    var totalFraction = desiredRatios.reduce((a,b) => {return a + b;});
+    var totalFraction = desiredRatios.reduce((a, b) => {
+        return a + b;
+    });
 
-    var desiredWorkers = [0,0,0,0];
+    var desiredWorkers = [0, 0, 0, 0];
     var totalWorkerCost = 0;
     for (var i = 0; i < ratioWorkers.length; i++) {
         desiredWorkers[i] = Math.floor(freeWorkers * desiredRatios[i] / totalFraction - currentworkers[i]);
@@ -605,7 +642,7 @@ function RbuyJobs() {
 
     // Safe check total worker costs, almost never going to be an issue
     // Or another reason that we're unable to buy everything we want
-    if (totalWorkerCost > game.resources.food.owned /* or breeding/available stuff */) {
+    if (totalWorkerCost > game.resources.food.owned /* or breeding/available stuff */ ) {
         // Buy max on food and then let the next frame take care of the rest.
         var buyAmountStore = game.global.buyAmt;
         game.global.buyAmt = "Max";
@@ -615,9 +652,28 @@ function RbuyJobs() {
         game.global.buyAmt = buyAmountStore;
     } else {
         //buy everything
+
+        // Fire anything that we need to fire to free up workers
         for (var i = 0; i < desiredWorkers.length; i++) {
 
-            if (desiredWorkers[i] == 0) continue;
+            if (desiredWorkers[i] > 0) continue;
+
+            var buyAmountStore = game.global.buyAmt;
+            var fireState = game.global.firing;
+
+            game.global.firing = (desiredWorkers[i] < 0);
+            game.global.buyAmt = Math.abs(desiredWorkers[i]);
+
+            buyJob(ratioWorkers[i], true, true);
+
+            game.global.firing = fireState;
+            game.global.buyAmt = buyAmountStore;
+        }
+
+        // Buy up workers that we need to
+        for (var i = 0; i < desiredWorkers.length; i++) {
+
+            if (desiredWorkers[i] <= 0) continue;
 
             var buyAmountStore = game.global.buyAmt;
             var fireState = game.global.firing;

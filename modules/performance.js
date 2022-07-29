@@ -141,12 +141,10 @@
 
 	M["performance"].UpdateAFKOverlay = function UpdateAFKOverlay()
 	{
-        const vmStatus = getVoidMapStatus();
-        const hdStats = new HDStats(vmStatus);
 		M["performance"].AFKOverlayZone.innerText = 'Current Zone: ' + game.global.world;
 		if (game.global.universe == 1) {
 		    M["performance"].AFKOverlayHelium.innerText = 'Current Helium: ' + prettify(Math.floor(game.resources.helium.owned));
-		    M["performance"].AFKOverlayStatus.innerHTML = 'Current Status: ' + updateAutoMapsStatus(true, hdStats, vmStatus)[0];
+		    M["performance"].AFKOverlayStatus.innerHTML = 'Current Status: ' + updateAutoMapsStatus(true)[0];
 		}
 		if (game.global.universe == 2) {
 		    M["performance"].AFKOverlayHelium.innerText = 'Current Radon: ' + prettify(Math.floor(game.resources.radon.owned));

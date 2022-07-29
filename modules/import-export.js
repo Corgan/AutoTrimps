@@ -475,22 +475,29 @@ function ImportExportTooltip(what, event) {
         percentzone: (100 * (game.c2.Downsize / (game.global.highestRadonLevelCleared + 1))).toFixed(2) + '%',
         color: 0
     },
-    Trappapalooza: {
+    Glass: {
         number: 25,
+        percent: getIndividualSquaredReward('Glass') + '%',
+        zone: game.c2.Glass,
+        percentzone: (100 * (game.c2.Glass / (game.global.highestRadonLevelCleared + 1))).toFixed(2) + '%',
+        color: 0
+    },
+    Trappapalooza: {
+        number: 26,
         percent: getIndividualSquaredReward('Trappapalooza') + '%',
         zone: game.c2.Trappapalooza,
         percentzone: (100 * (game.c2.Trappapalooza / (game.global.highestRadonLevelCleared + 1))).toFixed(2) + '%',
         color: 0
     },
     Berserk: {
-        number: 26,
+        number: 27,
         percent: getIndividualSquaredReward('Berserk') + '%',
         zone: game.c2.Berserk,
         percentzone: (100 * (game.c2.Berserk / (game.global.highestRadonLevelCleared + 1))).toFixed(2) + '%',
         color: 0
     },
     Wither: {
-        number: 27,
+        number: 28,
         percent: getIndividualSquaredReward('Wither') + '%',
         zone: game.c2.Wither,
         percentzone: (100 * (game.c2.Wither / (game.global.highestRadonLevelCleared + 1))).toFixed(2) + '%',
@@ -530,12 +537,12 @@ function ImportExportTooltip(what, event) {
 								a(b,85,75);
 							else if (b == "Wither")
 								a(b,85,75);
-							else if (b == "Wither")
-								a(b,75,65);
 							else if (b == "Storm")
 								a(b,90,80);
 							else if (b == "Berserk")
 								a(b,85,75);
+							else if (b == "Glass")
+								a(b,90,80);
 						}
 				});
 		} 
@@ -772,6 +779,15 @@ function ImportExportTooltip(what, event) {
                 <td>` + c2list.Downsize.zone + `</td>
                 <td bgcolor='black'>
                     <font color=` + c2list.Downsize.color + `>` + c2list.Downsize.percentzone + `
+                </td>
+            </tr>
+            <tr>
+                <td>Glass</td>
+                <td>` + c2list.Glass.number + `</td>
+                <td>` + c2list.Glass.percent + `</td>
+                <td>` + c2list.Glass.zone + `</td>
+                <td bgcolor='black'>
+                    <font color=` + c2list.Glass.color + `>` + c2list.Glass.percentzone + `
                 </td>
             </tr>
             <tr>

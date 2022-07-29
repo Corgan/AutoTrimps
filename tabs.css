@@ -98,3 +98,155 @@ background: none;
 #wrapper {
 background: -webkit-linear-gradient(left, #323341 12%,#626368 29.5%,#727275 47%,#727275 53%,#4c4d56 70.5%,#323341 88%); 
 }
+
+
+.windowRow div input{
+	width: 100%;
+}
+
+.windowRow div select{
+	width: 100%;
+}
+
+.windowRow{
+	padding: 0 2%;
+	margin: 0 1%;
+	font-weight: bold;
+}
+
+.windowRow.titles div{
+	text-align: center;
+	font-weight: bold;
+}
+
+.windowRow.titles{
+	border: 1px solid black;
+	margin: 0 1%;
+	padding: 0.2% 2%;
+}
+
+#windowAddRowBtn, #windowSwapPresetBtn{
+	margin-top: 0.5vw;
+}
+
+.windowDelete, .windowWorld, .windowZone, .windowCheckbox, .windowPreset, .windowRepeat, .windowRepeatUntil, .windowExit, .windowBwWorld, .windowCell, .windowMap, .windowTimes, .windowThrough, .windowRx, .windowPrio, .windowTx, .windowLevel, .windowSetting, .windowRepeat, .windowGather, .windowSpecial, .windowTributes, .windowMets, .windowBogs, .windowInsanity, .windowPotionType, .windowPotionNumber, .windowBonfire, .windowBoneDropdown, .windowBoneBelow, .windowBoneAmount, .windowBoneGather, .windowJobRatio {
+	display: inline-block;
+}
+
+.windowDelete .icomoon{
+	position: relative;
+	top: 0.6vw;
+	left: -0.55vw;
+	color: red;
+	font-weight: bold;
+	font-size: 2vw;
+}
+
+#windowError{
+	font-weight: bold;
+	color: red;
+}
+
+.windowDelete{
+	width: 4%;
+	cursor: pointer;
+}
+
+.windowJobRatio{
+	width: 15%;
+	cursor: pointer;
+}
+
+.windowWorld, .windowZone, .windowCell, .windowThrough, .windowLevel, .windowRepeat, .windowPotionNumber{
+	width: 9%;
+}
+
+.windowTributes, .windowMets, .windowBogs, .windowInsanity, .windowBonfire, .windowMap, .windowSetting{
+	width: 16%;
+}
+
+.windowCheckbox{
+	width: 4%;
+}
+
+.windowPotionType {
+    width: 18%;
+}
+.windowPreset, .windowSpecial{
+	width: 16%;
+}
+.windowGather{
+	width: 12%;
+}
+
+.windowRepeat{
+	width: 8.5%;
+}
+
+.windowRepeatUntil{
+	width: 15%;
+}
+
+.windowExit{
+	width: 8%;
+}
+
+.windowTimes{
+	width: 17%;
+}
+
+.windowBoneGather {
+    width: 10%;
+}
+
+.windowBoneDropdown, .windowBoneBelow, .windowBoneAmount {
+    width: 10%;
+}
+
+.windowBwZoneOn .windowRepeatUntil, .windowGatherOn .windowSpecial{
+	width: 16%;
+}
+
+.windowBwZoneOff .windowBwWorld, .windowGatherOff .windowGather{
+	display: none;
+}
+
+.windowBwZoneOn .windowBwWorld, .windowGatherOn .windowGather{
+	width: 10%;
+}
+
+.windowTxOn .windowTimes{
+	width: 11.5% !important;
+}
+
+.windowTxOff .windowTx{
+	display: none;
+}
+
+.windowTx{
+	width: 5.5%;
+}
+
+.windowBwMainOff .windowRepeatUntil select .windowBwClimbOption{
+	display: none;
+}
+
+#tooltipDiv.tooltipWindowLg{
+	width: 60%;
+    overflow-y: scroll;
+}
+#tooltipDiv.tooltipExtraLg{
+	width: 50%;
+}
+
+#tooltipDiv.tooltipExtraSuperLg{
+	width: 65%;
+}
+
+#tooltipDiv.tooltipExtraGigantic{
+	width: 80%;
+}
+
+#tooltipDiv.tooltipExtraBiggest{
+	width: 90%;
+}
