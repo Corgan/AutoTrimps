@@ -369,6 +369,14 @@ function autoMap() {
     if (doMaxMapBonus)
         shouldDoMaps = true;
 
+
+    let minZone = ((game.global.challengeActive == "Experience" && getPageSetting('farmWonders')) ? (getPageSetting('maxExpZone') - ((getPageSetting('wondersAmount') - 1) * 5)) : 0)
+
+    if(minZone > game.global.world) {
+        shouldDoMaps = false;
+        needPrestige = false;
+    }
+    
     //Maps
     vanillaMapatZone = (game.options.menu.mapAtZone.enabled && game.global.canMapAtZone && !isActiveSpireAT() && !disActiveSpireAT());
     if (vanillaMapatZone) {
@@ -376,13 +384,6 @@ function autoMap() {
             if (game.global.world == game.options.menu.mapAtZone.setZone[x].world)
                 shouldDoMaps = true;
         }
-    }
-
-    let minZone = ((game.global.challengeActive == "Experience" && getPageSetting('farmWonders')) ? (getPageSetting('maxExpZone') - ((getPageSetting('wondersAmount') - 1) * 5)) : 0)
-
-    if(minZone > game.global.world) {
-        shouldDoMaps = false;
-        needPrestige = false;
     }
 
     var siphlvl = shouldFarmLowerZone ? game.global.world - 10 : game.global.world - game.portal.Siphonology.level;
