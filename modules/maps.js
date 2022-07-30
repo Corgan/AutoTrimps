@@ -811,7 +811,7 @@ function autoMap() {
                 return map.level == game.global.world && map.location != 'Bionic';
             }).length >= 1) {
                 var mapID = game.global.mapsOwnedArray.find(function (map) {
-                    return map.level == game.global.world && map.location != 'Bionic';
+                    return map.level >= game.global.world && map.location != 'Bionic';
                 }).id;
                 selectedMap = mapID;
                 selectMap(mapID);
