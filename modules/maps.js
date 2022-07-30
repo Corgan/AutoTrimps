@@ -2164,7 +2164,7 @@ function RautoMap() {
                     var shiplevelzones = shipfarmlevel[shipfarmlevelindex];
                     if (shiplevelzones > 0) {
                         for (var map in game.global.mapsOwnedArray) {
-                            if (!game.global.mapsOwnedArray[map].noRecycle && ((game.global.world + shiplevelzones) == game.global.mapsOwnedArray[map].level)) {
+                            if (!game.global.mapsOwnedArray[map].noRecycle && ((game.global.world + shiplevelzones) == game.global.mapsOwnedArray[map].level) && game.global.mapsOwnedArray[map].bonus == "lsc") {
                                 selectedMap = game.global.mapsOwnedArray[map].id;
                                 break;
                             } else {
@@ -2173,7 +2173,7 @@ function RautoMap() {
                         }
                     } else if (shiplevelzones == 0) {
                         for (var map in game.global.mapsOwnedArray) {
-                            if (!game.global.mapsOwnedArray[map].noRecycle && game.global.world == game.global.mapsOwnedArray[map].level) {
+                            if (!game.global.mapsOwnedArray[map].noRecycle && game.global.world == game.global.mapsOwnedArray[map].level && game.global.mapsOwnedArray[map].bonus == "lsc") {
                                 selectedMap = game.global.mapsOwnedArray[map].id;
                                 break;
                             } else {
@@ -2182,7 +2182,7 @@ function RautoMap() {
                         }
                     } else if (shiplevelzones < 0) {
                         for (var map in game.global.mapsOwnedArray) {
-                            if (!game.global.mapsOwnedArray[map].noRecycle && ((game.global.world + shiplevelzones) == game.global.mapsOwnedArray[map].level)) {
+                            if (!game.global.mapsOwnedArray[map].noRecycle && ((game.global.world + shiplevelzones) == game.global.mapsOwnedArray[map].level) && game.global.mapsOwnedArray[map].bonus == "lsc") {
                                 selectedMap = game.global.mapsOwnedArray[map].id;
                                 break;
                             } else {
