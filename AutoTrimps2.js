@@ -190,6 +190,10 @@ function mainLoop() {
             buyStorage();
         } else if (getPageSetting('BuyBuildingsNew') == 2) buyBuildings();
         else if (getPageSetting('BuyBuildingsNew') == 3) buyStorage();
+        else if (getPageSetting('BuyBuildingsNew') == 4) {
+            dynamicGyms();
+            advancedNurseries();
+        }
         if (getPageSetting('UseAutoGen') == true && game.global.world > 229) autoGenerator();
 
         //Jobs

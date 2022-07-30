@@ -174,6 +174,23 @@ function buyBuildings() {
     }
 
     //Gyms:
+    dynamicGyms();
+
+    //Tributes:
+    if (!game.buildings.Tribute.locked && !hidebuild &&(getPageSetting('MaxTribute') > game.buildings.Tribute.owned || getPageSetting('MaxTribute') == -1)) {
+        safeBuyBuilding('Tribute');
+    }
+    //Nurseries
+    //if (game.buildings.Nursery.locked == 0 && (!hidebuild &&( game.global.world >= getPageSetting('NoNurseriesUntil') || getPageSetting('NoNurseriesUntil') < 1) && (getPageSetting('MaxNursery') > game.buildings.Nursery.owned || getPageSetting('MaxNursery') == -1)) || (game.global.challengeActive != "Daily" && getPageSetting('PreSpireNurseries') > game.buildings.Nursery.owned && isActiveSpireAT()) || (game.global.challengeActive == "Daily" && getPageSetting('dPreSpireNurseries') > game.buildings.Nursery.owned && disActiveSpireAT())) {
+	//safeBuyBuilding('Nursery');
+    //}
+
+    advancedNurseries();
+
+    postBuy2(oldBuy);
+}
+
+function dynamicGyms() {
     if (!game.buildings.Gym.locked && (getPageSetting('MaxGym') > game.buildings.Gym.owned || getPageSetting('MaxGym') == -1)) {
         var skipGym = false;
         if (getPageSetting('DynamicGyms')) {
@@ -197,15 +214,9 @@ function buyBuildings() {
             safeBuyBuilding('Gym');
        	    needGymystic = false;
     }
-    //Tributes:
-    if (!game.buildings.Tribute.locked && !hidebuild &&(getPageSetting('MaxTribute') > game.buildings.Tribute.owned || getPageSetting('MaxTribute') == -1)) {
-        safeBuyBuilding('Tribute');
-    }
-    //Nurseries
-    //if (game.buildings.Nursery.locked == 0 && (!hidebuild &&( game.global.world >= getPageSetting('NoNurseriesUntil') || getPageSetting('NoNurseriesUntil') < 1) && (getPageSetting('MaxNursery') > game.buildings.Nursery.owned || getPageSetting('MaxNursery') == -1)) || (game.global.challengeActive != "Daily" && getPageSetting('PreSpireNurseries') > game.buildings.Nursery.owned && isActiveSpireAT()) || (game.global.challengeActive == "Daily" && getPageSetting('dPreSpireNurseries') > game.buildings.Nursery.owned && disActiveSpireAT())) {
-	//safeBuyBuilding('Nursery');
-    //}
+}
 
+function advancedNurseries() {
     var nurseryZoneOk = game.global.world >= getPageSetting('NoNurseriesUntil');
     var maxNurseryOk = getPageSetting('MaxNursery') < 0 || game.buildings.Nursery.owned < getPageSetting('MaxNursery');
 
@@ -216,14 +227,12 @@ function buyBuildings() {
     var dailyNurseryPreSpire = dailySpireNurseryActive && game.buildings.Nursery.owned < getPageSetting('dPreSpireNurseries');
 
     //Nurseries
-    if (game.buildings.Nursery.locked == 0 && (advancedNurseries() && nurseryZoneOk && maxNurseryOk || nurseryPreSpire || dailyNurseryPreSpire)) {
+    if (game.buildings.Nursery.locked == 0 && (advancedNurseriesCheck() && nurseryZoneOk && maxNurseryOk || nurseryPreSpire || dailyNurseryPreSpire)) {
         safeBuyBuilding('Nursery');
     }
-
-    postBuy2(oldBuy);
 }
 
-function advancedNurseries() {
+function advancedNurseriesCheck() {
     //Only build nurseries if: A) Lacking Health & B) Not lacking Damage & C&D) Has max Map Stacks E) Has at least 1 Map Stack F) Not farming Spire or advN is off
     //Also, it requires less health during spire
     const maxHealthMaps = game.global.challengeActive === "Daily" ? getPageSetting('dMaxMapBonushealth') : getPageSetting('MaxMapBonushealth');
