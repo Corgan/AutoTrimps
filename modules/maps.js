@@ -854,6 +854,12 @@ function autoMap() {
                 }
             }
             runMap();
+        } else if (game.global.world <= 600 && !game.global.mapsActive && wondersAmount <= game.challenges.Experience.wonders
+            && wondersFromZ != -1 && game.global.world >= wondersFromZ && getPageSetting('finishExpOnBw') <= 600
+            && game.global.world >= getPageSetting('finishExpOnBw')) {
+            farmingWonder = false;
+            abandonChallenge();
+            selectedMap = "world";
         } else {
             farmingWonder = false;
             selectedMap = "world";
