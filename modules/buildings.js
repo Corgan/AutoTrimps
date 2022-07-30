@@ -216,11 +216,8 @@ function buyBuildings() {
     var dailyNurseryPreSpire = dailySpireNurseryActive && game.buildings.Nursery.owned < getPageSetting('dPreSpireNurseries');
 
     //Nurseries
-    if (game.buildings.Nursery.locked == 0 && !hidebuild && (advancedNurseries() && nurseryZoneOk && maxNurseryOk || nurseryPreSpire || dailyNurseryPreSpire)) {
-        //Nursery Wall
-        var nurseryWallpct = getPageSetting('NurseryWall');
-        if (nurseryWallpct <= 1 || getBuildingItemPrice(game.buildings.Nursery, "gems", false, 1) * Math.pow(1 - game.portal.Resourceful.modifier, game.portal.Resourceful.level) < (game.resources.gems.owned / nurseryWallpct))
-            safeBuyBuilding('Nursery');
+    if (game.buildings.Nursery.locked == 0 && (advancedNurseries() && nurseryZoneOk && maxNurseryOk || nurseryPreSpire || dailyNurseryPreSpire)) {
+        safeBuyBuilding('Nursery');
     }
 
     postBuy2(oldBuy);
@@ -236,7 +233,7 @@ function advancedNurseries() {
 
     var pierceMod = (game.global.brokenPlanet) ? getPierceAmt() : 0;
     const FORMATION_MOD_1 = game.upgrades.Dominance.done ? 2 : 1;
-    const a = (calcOurHealth() / FORMATION_MOD_1 < customVars.numHitsSurvived * (enemyDamage - calcOurBlock() / FORMATION_MOD_1 > 0 ? enemyDamage - calcOurBlock() / FORMATION_MOD_1 : enemyDamage * pierceMod));
+    const a = (calcOurHealth() / FORMATION_MOD_1 < MODULES.maps.numHitsSurvived * (enemyDamage - calcOurBlock() / FORMATION_MOD_1 > 0 ? enemyDamage - calcOurBlock() / FORMATION_MOD_1 : enemyDamage * pierceMod));
     const b = game.global.mapBonus >= maxHealthMaps;
     const c = game.global.mapBonus >= getPageSetting('MaxMapBonuslimit');
     const d = game.global.mapBonus >= 1 || getPageSetting('MaxMapBonuslimit') == 0 || maxHealthMaps == 0;

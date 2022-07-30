@@ -1721,8 +1721,6 @@ function updateCustomButtons() {
     (!radonon && !fuckbuilding) ? turnOn("MaxWormhole"): turnOff("MaxWormhole");
     (!radonon && !fuckbuilding) ? turnOn("MaxCollector"): turnOff("MaxCollector");
     (!radonon && !fuckbuilding) ? turnOn("MaxTribute"): turnOff("MaxTribute");
-    (!radonon && !fuckbuilding) ? turnOn("MaxNursery"): turnOff("MaxNursery");
-    (!radonon && !fuckbuilding) ? turnOn("NoNurseriesUntil"): turnOff("NoNurseriesUntil");
     (!radonon && !fuckbuilding) ? turnOn("WarpstationCap"): turnOff("WarpstationCap");
     (!radonon && !fuckbuilding) ? turnOn("WarpstationCoordBuy"): turnOff("WarpstationCoordBuy");
     (!radonon && !fuckbuilding) ? turnOn("FirstGigastation"): turnOff("FirstGigastation");
