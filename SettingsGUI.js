@@ -1710,7 +1710,7 @@ function updateCustomButtons() {
     !radonon ? turnOn("BuyBuildingsNew") : turnOff("BuyBuildingsNew");
     !radonon ? turnOn("MaxGym") : turnOff("MaxGym");
     !radonon ? turnOn("GymWall") : turnOff("GymWall");
-    var fuckbuilding = (bwRewardUnlocked("AutoStructure") == true && bwRewardUnlocked("DecaBuild") && getPageSetting('hidebuildings') == true && getPageSetting('BuyBuildingsNew') == 0);
+    var fuckbuilding = (bwRewardUnlocked("AutoStructure") == true && bwRewardUnlocked("DecaBuild") && getPageSetting('hidebuildings') == true && (getPageSetting('BuyBuildingsNew') == 0 || getPageSetting('BuyBuildingsNew') == 4));
     (!radonon && bwRewardUnlocked("AutoStructure") == true && bwRewardUnlocked("DecaBuild")) ? turnOn("hidebuildings"): turnOff("hidebuildings");
     (!radonon && !fuckbuilding) ? turnOn("MaxHut"): turnOff("MaxHut");
     (!radonon && !fuckbuilding) ? turnOn("MaxHouse"): turnOff("MaxHouse");
