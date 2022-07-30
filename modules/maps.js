@@ -378,6 +378,13 @@ function autoMap() {
         }
     }
 
+    let minZone = ((game.global.challengeActive == "Experience" && getPageSetting('farmWonders')) ? (getPageSetting('maxExpZone') - ((getPageSetting('wondersAmount') - 1) * 5)) : 0)
+
+    if(minZone > game.global.world) {
+        shouldDoMaps = false;
+        needPrestige = false;
+    }
+
     var siphlvl = shouldFarmLowerZone ? game.global.world - 10 : game.global.world - game.portal.Siphonology.level;
     var maxlvl = game.talents.mapLoot.purchased ? game.global.world - 1 : game.global.world;
     maxlvl += extraMapLevels;
@@ -789,11 +796,12 @@ function autoMap() {
         }
     }
 
+
     // Experience Challenge
     if (game.global.challengeActive == "Experience" && getPageSetting('farmWonders')) {
         var wondersFromZ = getPageSetting('maxExpZone');
         var wondersAmount = getPageSetting('wondersAmount');
-        var wondersFloorZ = wondersFromZ - ((getPageSetting('wondersAmount') - 1) * 5);
+        var wondersFloorZ = wondersFromZ - ((wondersAmount - 1) * 5);
         var finishOnBw = (() => {
             var pageSetting = getPageSetting('finishExpOnBw');
             pageSetting = pageSetting < 125 ? 125 : pageSetting;
