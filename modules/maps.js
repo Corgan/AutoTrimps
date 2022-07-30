@@ -808,7 +808,7 @@ function autoMap() {
             && game.global.world >= wondersFloorZ) {
             farmingWonder = true;
             if (!game.global.mapsActive && game.global.mapsOwnedArray.filter(function (map) {
-                return map.level == game.global.world && map.location != 'Bionic';
+                return map.level >= game.global.world && map.location != 'Bionic';
             }).length >= 1) {
                 var mapID = game.global.mapsOwnedArray.find(function (map) {
                     return map.level >= game.global.world && map.location != 'Bionic';
