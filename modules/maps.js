@@ -824,7 +824,7 @@ function autoMap() {
                 var result = buyMap();
                 if (result == -2) {
                     debug("Too many maps, recycling now: ", "maps", 'th-large');
-                    recycleBelow(true);
+                    recycleBelow(true, game.challenges.Experience.nextWonder - 1);
                     debug("Retrying, Buying a Map, level: #" + maplvlpicked, "maps", 'th-large');
                     result = buyMap();
                     if (result == -2) {
