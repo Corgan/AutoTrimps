@@ -1043,6 +1043,29 @@ function RupdateAutoMapsStatus(get) {
 
 
 function RautoMap() {
+    let vanillaMAZ = false;
+    if (game.options.menu.mapAtZone.enabled && game.global.canMapAtZone) {
+        for (const option of game.options.menu.mapAtZone.setZone) {
+            if (game.global.world < option.world || game.global.world > option.through) {
+                continue;
+            }
+            if (option.times === -1 && game.global.world !== option.world) {
+                continue;
+            }
+            if (option.times > 0 && (game.global.world - option.world) % option.times !== 0) {
+                continue;
+            }
+            if (option.cell === game.global.lastClearedCell + 2) {
+                vanillaMAZ = true;
+                break;
+            }
+        }
+
+        //MAZ is active
+        if (vanillaMAZ) {
+            return RupdateAutoMapsStatus();
+        }
+    }
 
     //Quest
     var Rquestfarming = false;
