@@ -987,6 +987,7 @@ var hypoprefragmappy = undefined;
 var hypofragmappybought = false;
 var Rhyposhouldwood = true;
 var contractVoid = false;
+var vanillaMAZ = false;
 
 function RupdateAutoMapsStatus(get) {
 
@@ -994,7 +995,7 @@ function RupdateAutoMapsStatus(get) {
 
     //Fail Safes
     if (getPageSetting('RAutoMaps') == 0) status = 'Off';
-
+    else if (vanillaMAZ) status = 'MAZ';
     else if (Rshouldcastle && game.global.totalVoidMaps <= 0) status = 'Frozen Castle';
     else if (contractVoid) status = 'Contract';
     else if (Rshouldshipfarm) status = 'Ship Farming';
@@ -1043,7 +1044,7 @@ function RupdateAutoMapsStatus(get) {
 
 
 function RautoMap() {
-    let vanillaMAZ = false;
+    vanillaMAZ = false;
     if (game.options.menu.mapAtZone.enabled && game.global.canMapAtZone) {
         let setZone = game.options.menu.mapAtZone.getSetZone();
         for (const option of setZone) {
