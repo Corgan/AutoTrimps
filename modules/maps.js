@@ -1222,15 +1222,6 @@ function RautoMap() {
         RshouldDoMaps = true;
     }
 
-    //Maps
-    RvanillaMapatZone = (game.options.menu.mapAtZone.enabled && game.global.canMapAtZone);
-    if (RvanillaMapatZone) {
-        for (var x = 0; x < game.options.menu.mapAtZone.setZoneU2.length; x++) {
-            if (game.global.world == game.options.menu.mapAtZone.setZoneU2[x].world)
-                RshouldDoMaps = true;
-        }
-    }
-
     //Time Farm
     if (getPageSetting('Rtimefarm') || (game.global.challengeActive == 'Daily' && getPageSetting('Rdtimefarm') == 2)) {
         var timefarmzone = getPageSetting('Rtimefarmzone');
