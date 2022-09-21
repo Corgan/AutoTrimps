@@ -277,7 +277,7 @@ function doPortal(challenge) {
 	}
         selectChallenge(challenge);
     }
-    if (portalWindowOpen && getPageSetting('AutoAllocatePerks')==2) {
+    if (portalWindowOpen && getPageSetting('AutoAllocatePerks')==2 && !game.portal.Looting_II.locked) {
 	numTab(6, true)
 	buyPortalUpgrade('Looting_II');
 	debug('Second Stage: Bought Max Looting II');

@@ -285,6 +285,8 @@ function initializeAllSettings() {
     createSetting('fastallocate', 'Fast Allocate', 'Turn on if your helium is above 500Qa. Not recommended for low amounts of helium. ', 'boolean', false, null, 'Core');
     createSetting('TrapTrimps', 'Trap Trimps', 'Automatically trap trimps when needed, including building traps. (when you turn this off, you may aswell turn off the in-game autotraps button, think of the starving trimps that could eat that food!)', 'boolean', true, null, "Core");
     createSetting('AutoEggs', 'AutoEggs', 'Click easter egg if it exists, upon entering a new zone. Warning: Quite overpowered. Please solemnly swear that you are up to no good.', 'boolean', false, null, 'Core');
+    createSetting('AutoBoneChargeMax', ['Manual Bone Charge', 'Bone Charge When Max', 'Bone Charge (Daily Only)'], 'Automatically uses a Bone Charge from the Bone Shrine if you are at max charges. The start zone can be configured under <i>Bone Charge Start Z.</i><br><br><b>Bone Charge (Daily Only)</b> as the name suggests; will only use a Bone Charge when at max and if on a daily challenge.<br><br><b>Default: Off (Manual Bone Charge).</b>', 'multitoggle', 0, null, "Core");
+    createSetting('AutoBoneChargeMaxStartZone', 'Bone Charge Start Z', 'Enter the zone number at which you wish to <i>start</i> using Bone Charges.<br><br>Alternatively, set it to <i><b>-1</b></i> to automatically update the zone to 10% of your highest zone cleared. For example, if your highest zone cleared was 400, bone charges would be automatically used from zone 360 onwards.<br><br><b>Default: Automated (-1).</b>', 'value', -1, null, "Core");
     document.getElementById('AutoEggs').parentNode.insertAdjacentHTML('afterend', '<br>');
 
     //RCore
@@ -366,11 +368,18 @@ function initializeAllSettings() {
     createSetting('dMaxPraidZone', 'Daily Max P Raid Z', 'List of maximum zones to Praid on Dailies corresponding to the list specified in Daily Praiding Z.  e.g. if Daily P raiding Z setting is 491,495 and this setting is 495,505, AT will P raid up to 495 from 491, and 505 from 495.  Set to -1 to always buy highest available prestige map.  If no corrsponding value, or value is invalid, defaults to max available (up to +10)', 'multiValue', [-1], null, 'Daily');
     createSetting('dPraidFarmFragsZ', 'Daily Farm Frags Z', 'P Raiding harder: List of zones where we should farm fragments until we can afford the highest or target prestige map for P raiding. Set to -1 to never farm fragments.', 'multiValue', [-1], null, 'Daily');
     createSetting('dPraidBeforeFarmZ', 'Dy Raid bef farm Z', 'P Raiding harder: List of zones where we should P Raid as far as we can afford before trying to farm fragments to Praid the highest or target prestige map.  Only occasionally useful, e.g. if it picks up a Speedexplorer or farming fragments is slow due to low damage. Set to -1 to never raid prestiges before farming fragents.', 'multiValue', [-1], null, 'Daily');
-    createSetting('Dailybwraid', 'Daily BW Raid', 'Toggle for Daily BW Raid settings. ', 'boolean', false, null, 'Daily');
+    createSetting('Dailybwraid', 'Daily BW Raid', 'Toggle for Daily BW Raid settings. Turn off Climb BW. ', 'boolean', false, null, 'Daily');
     createSetting('dbwraidcell', 'Daily BW Raiding Cell', 'What Cell to start BW Raiding at. Recommend above your P Raiding cell if used together. -1 to Raid at cell 1. ', 'value', -1, null, 'Daily');
     createSetting('dBWraidingz', 'Daily Z to BW Raid', 'Raids BWs at zone specified in dailys. Example: 495, will raid all BWs for all gear starting from 495. Will skip lower BWs if you have enough damage. Once all gear is obtained, will return to regular farming. Accepts comma separated lists, and raids up to the value in the corrsponding position in the Max BW to raid setting. So if this is set to 480,495 and Daily Max BW to Raid is set to 500,515 AT will BW raid up to 500 from 480, and 515 from 495. Make sure these lists are the same length or BW raiding may fail.', 'multiValue', [-1], null, 'Daily');
     createSetting('dBWraidingmax', 'Daily Max BW to raid', 'Raids BWs until zone specified in dailys. Example: 515, will raid all BWs for all gear until 515. Will skip lower BWs if you have enough damage. Once all gear is obtained, will return to regular farming. Now accepts comma separated lists - see description of Daily Z to BW raid setting for details.', 'multiValue', [-1], null, 'Daily');
-
+    
+    //Shrine - U1 (Daily)
+    document.getElementById('dBWraidingmax').parentNode.insertAdjacentHTML('afterend', '<br>');
+    createSetting('Hdshrine', ['Daily AutoShrine Off', 'Daily AutoShrine On', 'DAS: Normal'], 'Turn this on if you want to use Shrines automatically in Dailies. Use DAS: Normal if you want to use the settings in the Maps tab if do not wish to copy them here. ', 'multitoggle', 0, null, 'Daily');
+    createSetting('Hdshrinemaz', 'Daily AutoShrine Settings', 'Click to open Daily AutoShrine settings. <br> <b>Zone:</b> What zone to use Bone Shrine charges. <br> <b>Cell:</b> What cell to use Bone Shrine charges at, if you use it after cell 80 you will get the benefit of all the books. to use. <br> <b>Amount:</b> How many Bone Shrine charges you wish to use. <br> <b>Example:</b> If you put Zone: 40\, Cell: 10\, Amount: 3\, you will use 3 Bone Shrine Charges at zone 40 at cell 10 in a Daily. ', 'infoclick', false, null, 'Daily');
+    createSetting('Hdshrinezone', 'AutoShrine: Zone', 'zone', 'multiValue', [-1], null, 'Daily');
+    createSetting('Hdshrinecell', 'AutoShrine: Cell', 'cell', 'multiValue', [-1], null, 'Daily');
+    createSetting('Hdshrineamount', 'AutoShrine: Amount', 'amount', 'multiValue', [-1], null, 'Daily');
 
     //RDaily
 
@@ -408,8 +417,34 @@ function initializeAllSettings() {
     createSetting('dlowdmg', 'DHS: Low Damage', '<b>LOW DAMAGE HEIRLOOM</b><br><br>Enter the name of your low damage heirloom. This is the heirloom that you will use for windstacking in dailies. ', 'textValue', 'undefined', null, 'Daily');
 
 
-    //Portal Line
+    //RHeirloom
     document.getElementById('dlowdmg').parentNode.insertAdjacentHTML('afterend', '<br>');
+    createSetting('Rdhs', ['DHS: Off', 'DHS: On', 'DHS: Normal'], 'Heirloom swapping master button for Dailies. Turn this on to allow heirloom swapping and its associated settings. Use DHS: Normal to use the non-daily settings. ', 'multitoggle', 0, null, 'Daily');
+    
+    //DShield Swapping
+    document.getElementById('Rdhs').parentNode.insertAdjacentHTML('afterend', '<br>');
+    createSetting('Rdhsshield', 'Daily Shields', 'Toggle to swap Shields in Dailies', 'boolean', false, null, 'Daily');
+    createSetting('Rdhsz', 'DHSh: Zone', 'Which zone to swap from your first heirloom you have defined to your second heirloom you have defined. I.e if this value is 75 it will switch to the second heirloom <b>on z75</b>', 'value', '-1', null, 'Daily');
+    createSetting('Rdhs1', 'DHSh: First', '<b>First Heirloom to use</b><br><br>Enter the name of your first heirloom. This is the heirloom that you will use before swapping to the second heirloom at the zone you have defined in the HS: Zone. ', 'textValue', 'undefined', null, 'Daily');
+    createSetting('Rdhs2', 'DHSh: Second', '<b>Second Heirloom to use</b><br><br>Enter the name of your second heirloom. This is the heirloom that you will use after swapping from the first heirloom at the zone you have defined in the HS: Zone. ', 'textValue', 'undefined', null, 'Daily');
+    
+    //DStaff Swapping
+    document.getElementById('Rdhs2').parentNode.insertAdjacentHTML('afterend', '<br>');
+    createSetting('Rdhsstaff', 'Daily Staffs', 'Toggle to swap Staffs', 'boolean', false, null, 'Daily');
+    createSetting('Rdhsworldstaff', 'DHSt: World', '<b>World Staff</b><br><br>Enter the name of your world staff for Dailies.', 'textValue', 'undefined', null, 'Daily');
+    createSetting('Rdhsmapstaff', 'DHSt: Map', '<b>Mapping staff</b><br><br>Enter the name of your mapping staff for Dailies.', 'textValue', 'undefined', null, 'Daily');
+    createSetting('Rdhstributestaff', 'DHSt: Tribute', '<b>Tribute farming staff</b><br><br>Enter the name of the staff you would like to equip during tribute farming for Dailies', 'textValue', 'undefined', null, 'Daily');
+    
+    //Shrine - U2 (Daily)
+    document.getElementById('Rdhstributestaff').parentNode.insertAdjacentHTML('afterend', '<br>');
+    createSetting('Rdshrine', ['Daily AutoShrine Off', 'Daily AutoShrine On', 'DAS: Normal'], 'Turn this on if you want to use Shrines automatically in Dailies. Use DAS: Normal if you want to use the settings in the Maps tab if do not wish to copy them here. ', 'multitoggle', 0, null, 'Daily');
+    createSetting('Rdshrinemaz', 'Daily AutoShrine Settings', 'Click to open Daily AutoShrine settings. <br> <b>Zone:</b> What zone to use Bone Shrine charges. <br> <b>Cell:</b> What cell to use Bone Shrine charges at, if you use it after cell 80 you will get the benefit of all the books. to use. <br> <b>Amount:</b> How many Bone Shrine charges you wish to use. <br> <b>Example:</b> If you put Zone: 40\, Cell: 10\, Amount: 3\, you will use 3 Bone Shrine Charges at zone 40 at cell 10 in a Daily. ', 'infoclick', false, null, 'Daily');
+    createSetting('Rdshrinezone', 'AutoShrine: Zone', 'zone', 'multiValue', [-1], null, 'Daily');
+    createSetting('Rdshrinecell', 'AutoShrine: Cell', 'cell', 'multiValue', [-1], null, 'Daily');
+    createSetting('Rdshrineamount', 'AutoShrine: Amount', 'amount', 'multiValue', [-1], null, 'Daily');
+    
+    //Portal Line
+    document.getElementById('Rdshrineamount').parentNode.insertAdjacentHTML('afterend', '<br>');
     createSetting('AutoStartDaily', 'Auto Start Daily', 'Starts Dailies for you. When you portal with this on, it will select the oldest Daily and run it. Use the settings in this tab to decide whats next. ', 'boolean', false, null, 'Daily');
     createSetting('u2daily', 'Daily in U2', 'If this is on, you will do your daily in U2. ', 'boolean', false, null, 'Daily');
     createSetting('AutoPortalDaily', ['Daily Portal Off', 'DP: He/Hr', 'DP: Custom'], '<b>DP: He/Hr:</b> Portals when your world zone is above the minium you set (if applicable) and the buffer falls below the % you have defined. <br><b>DP: Custom:</b> Portals after clearing the zone you have defined in Daily Custom Portal. ', 'multitoggle', '0', null, "Daily");
@@ -625,6 +660,15 @@ function initializeAllSettings() {
     createSetting('maxExpZone', "Max XP Zone", 'Acquire Wonders from this zone down. <b>This must have a value or other Experience settings will not work.</b> If >z600, will complete Experience by running BW on this zone as well. For example, targeting three Wonders with a Max XP Zone of 600 will obtain the Wonders at: 600, 595, 590.', 'value', '600', null, 'Maps');
     createSetting('finishExpOnBw', 'Finish XP on BW', 'Finish Experience challenge by completing this level of BW. <b>This level of BW should already be in your inventory.</b> Use BW Raiding module if you want to raid to a specific level of BW before 601, or else you may accidentally complete the challenge at a lower or higher BW than intended using this setting. If this is an invalid BW value, it will run the next lowest valid BW zone (e.g. 606 will run 605).', 'value', '605', null, 'Maps');
 
+    //Shrine - U1
+    document.getElementById('finishExpOnBw').parentNode.insertAdjacentHTML('afterend', '<br>');
+    createSetting('Hshrine', 'AutoShrine', 'Turn this on if you want to use Shrines automatically. ', 'boolean', false, null, 'Maps');
+    createSetting('Hshrinemaz', 'AutoShrine Settings', 'Click to open AutoShrine settings. <br> <b>Zone:</b> What zone to use Bone Shrine charges. <br> <b>Cell:</b> What cell to use Bone Shrine charges at, if you use it after cell 80 you will get the benefit of all the books. to use. <br> <b>Amount:</b> How many Bone Shrine charges you wish to use. <br> <b>Example:</b> If you put Zone: 40\, Cell: 10\, Amount: 3\, you will use 3 Bone Shrine Charges at zone 40 at cell 10. ', 'infoclick', false, null, 'Maps');
+    createSetting('Hshrinezone', 'AutoShrine: Zone', 'zone', 'multiValue', [-1], null, 'Maps');
+    createSetting('Hshrinecell', 'AutoShrine: Cell', 'cell', 'multiValue', [-1], null, 'Maps');
+    createSetting('Hshrineamount', 'AutoShrine: Amount', 'amount', 'multiValue', [-1], null, 'Maps');
+    createSetting('Hshrinecharge', 'AutoShrine: Charge', 'charge count you will never see this setting hehehehe', 'value', 0, null, 'Maps');
+  
     //RMaps
 
     //Line 1
@@ -661,7 +705,7 @@ function initializeAllSettings() {
     //Tributefarm
     document.getElementById('Rtimefarmgather').parentNode.insertAdjacentHTML('afterend', '<br>');
     createSetting('Rtributefarm', 'Tribute Farm', 'Turn this on if you want to use Tribute Farming. ', 'boolean', false, null, 'Maps');
-    createSetting('Rtributefarmmaz', 'Tribute Farm Settings', 'Click to open the Tribute Farm settings. <br> <b>Zone:</b> What zone to start tribute farming. It will also put all your workers into farming. <br> <b>Cell:</b> What cell to start tribute farming at. <br> <b>Tributes:</b> How many tributes to farm. <br> <b>Level:</b> How many map levels above your zone to use. <br> <b>Map:</b> What kind of map you want to use. <br> <b>Special:</b> What type of special you want to use. <br> <b>Gather:</b> What resource you would like to gather. <br> <b>Example:</b> If you put Zone: 40\, Cell: 10\, Tributes: 1000\, Level: 5\, Map: Gardens\, Special: Large Savory Cache\, Gather: Food\, you will farm at zone 30 at cell 10 for 1000 tributes in a +5 Gardens map that has a Large Savory Cache while gathering food. ', 'infoclick', false, null, 'Maps');
+    createSetting('Rtributefarmmaz', 'Tribute Farm Settings', 'Click to open the Tribute Farm settings. <br> <b>Zone:</b> What zone to start tribute farming. It will also put all your workers into farming. <br> <b>Cell:</b> What cell to start tribute farming at. <br> <b>Tributes:</b> How many tributes to farm. <br> <b>Level:</b> How many map levels above your zone to use. <br> <b>Map:</b> What kind of map you want to use. <br> <b>Special:</b> What type of special you want to use. <br> <b>Gather:</b> What resource you would like to gather. <br> <b>Example:</b> If you put Zone: 40\, Cell: 10\, Tributes: 1000\, Level: 5\, Map: Gardens\, Special: Large Savory Cache\, Gather: Food\, you will farm at zone 40 at cell 10 for 1000 tributes in a +5 Gardens map that has a Large Savory Cache while gathering food. ', 'infoclick', false, null, 'Maps');
     createSetting('Rtributefarmzone', 'TrF: Zone', 'zone', 'multiValue', [-1], null, 'Maps');
     createSetting('Rtributefarmcell', 'TrF: Cell', 'cell', 'multiValue', [-1], null, 'Maps');
     createSetting('Rtributefarmamount', 'TrF: Tributes', 'tributes', 'multiValue', [-1], null, 'Maps');
@@ -669,7 +713,15 @@ function initializeAllSettings() {
     createSetting('Rtributemapselection', 'TrF: Map Selection', 'map', 'textValue', 'undefined', null, 'Maps');
     createSetting('Rtributespecialselection', 'TrF: Special Selection', 'special', 'textValue', 'undefined', null, 'Maps');
     createSetting('Rtributegatherselection', 'TrF: Gather Selection', 'gather', 'textValue', 'undefined', null, 'Maps');
-
+    
+    //Shrine - U2
+    document.getElementById('Rtributegatherselection').parentNode.insertAdjacentHTML('afterend', '<br>');
+    createSetting('Rshrine', 'AutoShrine', 'Turn this on if you want to use Shrines automatically. ', 'boolean', false, null, 'Maps');
+    createSetting('Rshrinemaz', 'AutoShrine Settings', 'Click to open AutoShrine settings. <br> <b>Zone:</b> What zone to use Bone Shrine charges. <br> <b>Cell:</b> What cell to use Bone Shrine charges at, if you use it after cell 80 you will get the benefit of all the books. to use. <br> <b>Amount:</b> How many Bone Shrine charges you wish to use. <br> <b>Example:</b> If you put Zone: 40\, Cell: 10\, Amount: 3\, you will use 3 Bone Shrine Charges at zone 40 at cell 10. ', 'infoclick', false, null, 'Maps');
+    createSetting('Rshrinezone', 'AutoShrine: Zone', 'zone', 'multiValue', [-1], null, 'Maps');
+    createSetting('Rshrinecell', 'AutoShrine: Cell', 'cell', 'multiValue', [-1], null, 'Maps');
+    createSetting('Rshrineamount', 'AutoShrine: Amount', 'amount', 'multiValue', [-1], null, 'Maps');
+    createSetting('Rshrinecharge', 'AutoShrine: Charge', 'charge count you will never see this setting hehehehe', 'value', 0, null, 'Maps');
 
 
     //Spire
@@ -697,7 +749,7 @@ function initializeAllSettings() {
     createSetting('MaxPraidZone', 'Max P Raid Zones', 'List of maximum zones to Praid corresponding to the list specified in Praiding zones.  e.g. if P raiding zones setting is 491,495 and this setting is 495,505, AT will P raid up to 495 from 491, and 505 from 495. Set to -1 to always buy highest available prestige map.  If no corrsponding value, or value is invalid, defaults to max available (up to +10)', 'multiValue', [-1], null, 'Raiding');
     createSetting('PraidFarmFragsZ', 'Farm Fragments Z', 'P Raiding harder: List of zones where we should farm fragments until we can afford the highest or target prestige map for P raiding. Set to -1 to never farm fragments. ', 'multiValue', [-1], null, 'Raiding');
     createSetting('PraidBeforeFarmZ', 'Raid before farm Z', 'P Raiding harder: List of zones where we should P Raid as far as we can afford before trying to farm fragments to Praid the highest or target prestige map.  Only occasionally useful, e.g. if it picks up a Speedexplorer or farming fragments is slow due to low damage. Set to -1 to never raid prestiges before farming fragents.', 'multiValue', [-1], null, 'Raiding');
-    createSetting('BWraid', 'BW Raiding', 'Raids BW at zone specified in BW Raiding Z/max.', 'boolean', false, null, 'Raiding');
+    createSetting('BWraid', 'BW Raiding', 'Raids BW at zone specified in BW Raiding Z/max. Turn off Climb BW. ', 'boolean', false, null, 'Raiding');
     createSetting('bwraidcell', 'BW Raiding Cell', 'What Cell to start BW Raiding at. Recommend above your P Raiding cell if used together. -1 to Raid at cell 1. ', 'value', -1, null, 'Raiding');
     createSetting('BWraidingz', 'Z to BW Raid', 'Raids BWs at zone specified. Example: 495, will raid all BWs for all gear starting from 495. Will skip lower BWs if you have enough damage. Once all gear is obtained, will return to regular farming. Accepts comma separated lists, and raids up to the value in the corrsponding position in the Max BW to raid setting. So if this is set to 480,495 and Max BW to Raid is set to 500,515 AT will BW raid up to 500 from 480, and 515 from 495. Make sure these lists are the same length or BW raiding may fail.', 'multiValue', [-1], null, 'Raiding');
     createSetting('BWraidingmax', 'Max BW to raid', 'Raids BWs until zone specified. Example: 515, will raid all BWs for all gear until 515. Will skip lower BWs if you have enough damage. Once all gear is obtained, will return to regular farming. Now accepts comma separated lists - see description of Z to BW raid setting for details.', 'multiValue', [-1], null, 'Raiding');
@@ -719,6 +771,7 @@ function initializeAllSettings() {
     //Windstacking
 
     //Line 1
+    createSetting('windstackingfiller', 'Use Daily Tab for Dailies!', 'These settings are for fillers ONLY. ', 'boolean', 'false', null, 'Windstacking');
     createSetting('turnwson', 'Turn WS On!', 'Turn on Windstacking Stance in Combat to see the settings! ', 'boolean', 'false', null, 'Windstacking');
     createSetting('WindStackingMin', 'Windstack Min Zone', 'For use with Windstacking Stance, enables windstacking in zones above and inclusive of the zone set. (Get specified windstacks then change to D, kill bad guy, then repeat). This is designed to force S use until you have specified stacks in wind zones, overriding scryer settings. All windstack settings apart from WS MAX work off this setting. ', 'value', '-1', null, 'Windstacking');
     createSetting('WindStackingMinHD', 'Windstack H:D', 'For use with Windstacking Stance, if your H:D is below this number it will use W inside windlight and S outside of it. If it is above it will start manually windstacking using heirloom swapping and stancing. If you just want to use W stance just set this to something impossibly high like 1e30. ', 'value', '-1', null, 'Windstacking');
@@ -875,6 +928,7 @@ function initializeAllSettings() {
     createSetting('Rcalcmaxequality', ['Equality Calc Off', 'EC: On', 'EC: Health'], '<b>Experimental. </b><br>Adds Equality Scaling levels to the battlecalc. Will always calculate equality based on actual scaling levels when its turned off by other settings. Assumes you use Equality Scaling. Turning this on allows in-game Equality Scaling to adjust your Health accordingly. EC: Health only decreases enemies attack in the calculation which may improve speed. ', 'multitoggle', 0, null, 'Combat');
     createSetting('Rmanageequality', 'Manage Equality', 'Manages Equality for you. Sets Equality to 0 on Slow enemies, and Autoscaling on for Fast enemies. ', 'boolean', 'false', null, 'Combat');
     createSetting('Rcalcfrenzy', 'Frenzy Calc', '<b>Experimental. </b><br>Adds frenzy to the calc. Be warned\, it will not farm as much with this on as it expects 100% frenzy uptime. ', 'boolean', 'false', null, 'Combat');
+    createSetting('Rmutecalc', 'Mute Calc', 'What zone to start calculating Mutations at. 0 to disable.', 'value', '-1', null, 'Combat');
 
 
     //Scryer
@@ -1057,6 +1111,10 @@ function initializeAllSettings() {
     document.getElementById('Rtimefarmmaz').setAttribute('onclick', 'MAZLookalike("Time Farm", "Rtimefarm")');
     document.getElementById('Rdtimefarmmaz').setAttribute('onclick', 'MAZLookalike("dTime Farm", "Rdtimefarm")');
     document.getElementById('Rtributefarmmaz').setAttribute('onclick', 'MAZLookalike("Tribute Farm", "Rtributefarm")');
+    document.getElementById('Hshrinemaz').setAttribute('onclick', 'MAZLookalike("Shrine - U1", "Hshrine")');
+    document.getElementById('Hdshrinemaz').setAttribute('onclick', 'MAZLookalike("Shrine - U1 (Daily)", "Hdshrine")');
+    document.getElementById('Rshrinemaz').setAttribute('onclick', 'MAZLookalike("Shrine - U2", "Rshrine")');
+    document.getElementById('Rdshrinemaz').setAttribute('onclick', 'MAZLookalike("Shrine - U2 (Daily)", "Rdshrine")');
     document.getElementById('Rblackbogmaz').setAttribute('onclick', 'MAZLookalike("Quagmire", "Rblackbog")');
     document.getElementById('Rinsanitymaz').setAttribute('onclick', 'MAZLookalike("Insanity", "Rinsanityon")');
     document.getElementById('Ralchfarmmaz').setAttribute('onclick', 'MAZLookalike("Alch", "Ralchon")');
@@ -1067,6 +1125,7 @@ function initializeAllSettings() {
     //Display
 
     //Line 1
+    createSetting('zonetracker', 'Zone', 'tracks zones you wil lnot see this huehue', 'value', 1, null, 'Display');
     createSetting('EnhanceGrids', 'Enhance Grids', 'Apply slight visual enhancements to world and map grids that highlights with drop shadow all the exotic, powerful, skeletimps and other special imps.', 'boolean', false, null, 'Display');
     createSetting('showbreedtimer', 'Enable Breed Timer', 'Enables the display of the hidden breedtimer. Turn this off to reduce memory. ', 'boolean', true, null, 'Display');
     createSetting('showautomapstatus', 'Enable AutoMap Status', 'Enables the display of the map status. Turn this off to reduce memory. ', 'boolean', true, null, 'Display');
@@ -1082,6 +1141,7 @@ function initializeAllSettings() {
     //SPAM
 
     //Line 1
+    
     createSetting('SpamGeneral', 'General Spam', 'General Spam = Notification Messages, Auto He/Hr', 'boolean', true, null, 'Display');
     createSetting('SpamUpgrades', 'Upgrades Spam', 'Upgrades Spam', 'boolean', true, null, 'Display');
     createSetting('SpamEquipment', 'Equipment Spam', 'Equipment Spam', 'boolean', true, null, 'Display');
@@ -1529,6 +1589,8 @@ function updateCustomButtons() {
 
     //Radon
     var radonon = getPageSetting('radonsettings') == 1;
+    //Bone Shrine
+    var boneShrinePurchased = game.permaBoneBonuses.boosts.owned > 0 ? true : false;
 
     //Tabs
     if (document.getElementById("tabSpire") != null) {
@@ -1569,6 +1631,8 @@ function updateCustomButtons() {
     !radonon && getPageSetting('amalcoord') == true ? turnOn("amalcoordz") : turnOff("amalcoordz");
     !radonon ? turnOn("AutoAllocatePerks") : turnOff("AutoAllocatePerks");
     !radonon && getPageSetting('AutoAllocatePerks') == 1 ? turnOn("fastallocate") : turnOff("fastallocate");
+    boneShrinePurchased ? turnOn('AutoBoneChargeMax') : turnOff("AutoBoneChargeMax");
+    boneShrinePurchased ? turnOn("AutoBoneChargeMaxStartZone") : turnOff("AutoBoneChargeMaxStartZone");
 
     //Portal
     !radonon ? turnOn("AutoPortal") : turnOff("AutoPortal");
@@ -1651,6 +1715,13 @@ function updateCustomButtons() {
     !radonon && getPageSetting('AutoPortalDaily') == 1 ? turnOn("dHeHrDontPortalBefore") : turnOff("dHeHrDontPortalBefore");
     !radonon && getPageSetting('AutoPortalDaily') == 1 ? turnOn("dHeliumHrBuffer") : turnOff("dHeliumHrBuffer");
     !radonon && getPageSetting('AutoPortalDaily') > 0 ? turnOn("dHeliumHourChallenge") : turnOff("dHeliumHourChallenge");
+    
+    //Shrine - U1 (Daily)
+    !radonon ? turnOn("Hdshrine") : turnOff("Hdshrine");
+    (!radonon && getPageSetting('Hdshrine') == 1) ? turnOn("Hdshrinemaz"): turnOff("Hdshrinemaz");
+    turnOff("Hdshrinezone");
+    turnOff("Hdshrinecell");
+    turnOff("Hdshrineamount");
 
 
     //RDaily
@@ -1674,7 +1745,7 @@ function updateCustomButtons() {
 
     //RDTime Farm
     radonon ? turnOn("Rdtimefarm") : turnOff("Rdtimefarm");
-    (radonon && getPageSetting('Rdtimefarm') == true) ? turnOn("Rdtimefarmmaz"): turnOff("Rdtimefarmmaz");
+    (radonon && getPageSetting('Rdtimefarm') == 1) ? turnOn("Rdtimefarmmaz"): turnOff("Rdtimefarmmaz");
     turnOff("Rdtimefarmzone");
     turnOff("Rdtimefarmcell");
     turnOff("Rdtimefarmtime");
@@ -1682,6 +1753,32 @@ function updateCustomButtons() {
     turnOff("Rdtimefarmmap");
     turnOff("Rdtimefarmspecial");
     turnOff("Rdtimefarmgather");
+    
+    //RDHeirloom Swapping
+    radonon ? turnOn('Rdhs') : turnOff('Rdhs');
+    var dhson = (getPageSetting('Rdhs') == 1);
+
+    //RDShields
+    radonon && dhson ? turnOn('Rdhsshield') : turnOff('Rdhsshield');
+    var dhsshieldon = (getPageSetting('Rdhsshield') == true);
+    radonon && dhson && dhsshieldon ? turnOn('Rdhsz') : turnOff('Rdhsz');
+    radonon && dhson && dhsshieldon ? turnOn('Rdhs1') : turnOff('Rdhs1');
+    radonon && dhson && dhsshieldon ? turnOn('Rdhs2') : turnOff('Rdhs2');
+
+    //RDStaffs
+    radonon && hson ? turnOn('Rdhsstaff') : turnOff('Rdhsstaff');
+    var dhsstaffon = (getPageSetting('Rdhsstaff') == true);
+    radonon && dhson && dhsstaffon ? turnOn('Rdhsworldstaff') : turnOff('Rdhsworldstaff');
+    radonon && dhson && dhsstaffon ? turnOn('Rdhsmapstaff') : turnOff('Rdhsmapstaff');
+    radonon && dhson && dhsstaffon ? turnOn('Rdhstributestaff') : turnOff('Rdhstributestaff');
+    
+    //Shrine - U2 (Daily)
+    radonon ? turnOn("Rdshrine") : turnOff("Rdshrine");
+    (radonon && getPageSetting('Rdshrine') == 1) ? turnOn("Rdshrinemaz"): turnOff("Rdshrinemaz");
+    turnOff("Rdshrinezone");
+    turnOff("Rdshrinecell");
+    turnOff("Rdshrineamount");
+
 
     //RDPortal
     radonon ? turnOn("RAutoStartDaily") : turnOff("RAutoStartDaily");
@@ -1846,6 +1943,14 @@ function updateCustomButtons() {
     (!radonon && getPageSetting("farmWonders")) ? turnOn("wondersAmount") : turnOff("wondersAmount");
     (!radonon && getPageSetting("farmWonders")) ? turnOn("maxExpZone") : turnOff("maxExpZone");
     (!radonon && getPageSetting("farmWonders")) ? turnOn("finishExpOnBw") : turnOff("finishExpOnBw");
+  
+    //Shrine - U1
+    !radonon ? turnOn("Hshrine") : turnOff("Hshrine");
+    (!radonon && getPageSetting('Hshrine') == true) ? turnOn("Hshrinemaz"): turnOff("Hshrinemaz");
+    turnOff("Hshrinezone");
+    turnOff("Hshrinecell");
+    turnOff("Hshrineamount");
+    turnOff("Hshrinecharge");
 
     //RMaps
     radonon ? turnOn("RAutoMaps") : turnOff("RAutoMaps");
@@ -1877,6 +1982,14 @@ function updateCustomButtons() {
     turnOff("Rtributemapselection");
     turnOff("Rtributespecialselection");
     turnOff("Rtributegatherselection");
+    
+    // Shrine - U2
+    radonon ? turnOn("Rshrine") : turnOff("Rshrine");
+    (radonon && getPageSetting('Rshrine') == true) ? turnOn("Rshrinemaz"): turnOff("Rshrinemaz");
+    turnOff("Rshrinezone");
+    turnOff("Rshrinecell");
+    turnOff("Rshrineamount");
+    turnOff("Rshrinecharge");
 
     radonon ? turnOn("RVoidMaps") : turnOff("RVoidMaps");
     radonon ? turnOn("Rvoidscell") : turnOff("Rvoidscell");
@@ -1974,6 +2087,7 @@ function updateCustomButtons() {
     radonon ? turnOn("Rcalcmaxequality") : turnOff("Rcalcmaxequality");
     radonon ? turnOn("Rmanageequality") : turnOff("Rmanageequality");
     radonon ? turnOn("Rcalcfrenzy") : turnOff("Rcalcfrenzy");
+    radonon ? turnOn("Rmutecalc") : turnOff("Rmutecalc");
 
 
 
@@ -2236,6 +2350,7 @@ function updateCustomButtons() {
 
     //Display
     (game.worldUnlocks.easterEgg.locked == false) ? turnOn('AutoEggs'): turnOff('AutoEggs');
+    turnOff("zonetracker");
 
 
     //Memory
