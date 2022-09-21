@@ -1045,7 +1045,8 @@ function RupdateAutoMapsStatus(get) {
 function RautoMap() {
     let vanillaMAZ = false;
     if (game.options.menu.mapAtZone.enabled && game.global.canMapAtZone) {
-        for (const option of game.options.menu.mapAtZone.setZone) {
+        let setZone = game.options.menu.mapAtZone.getSetZone();
+        for (const option of setZone) {
             if (game.global.world < option.world || game.global.world > option.through) {
                 continue;
             }
