@@ -188,6 +188,12 @@
 			
 			if (cell.corrupted)
 				$cell.title += " - " + mutationEffects[cell.corrupted].title;
+			
+			if (cell.u2Mutation !== undefined) {
+				cell.u2Mutation.forEach(mut => {
+					$cell.classList.add(mut);
+				});
+			}
 		}
 	}
 
