@@ -40,6 +40,8 @@ var $u1Graph = document.getElementById("graphFooterLine1"),
         "Fluffy XP",
         "Fluffy XP PerHour",
         "Amalgamators",
+	"Wonders",
+        "Empower"
     ],
     $u1graphSel = document.createElement("select");
 for (var item in (($u1graphSel.id = "u1graphSelection"), $u1graphSel.setAttribute("style", ""), $u1graphSel.setAttribute("onchange", "drawGraph()"), u1graphList)) {
@@ -63,6 +65,11 @@ var $u2Graph = document.getElementById("graphFooterLine1"),
         "Smithies",
         "Scruffy XP",
         "Scruffy XP PerHour",
+	"Worshippers",
+        "Bonfires",
+        "Embers",
+        "Cruffys",
+        "Empower"
     ],
     $u2graphSel = document.createElement("select");
 for (var item in (($u2graphSel.id = "u2graphSelection"), $u2graphSel.setAttribute("style", ""), $u2graphSel.setAttribute("onchange", "drawGraph()"), u2graphList)) {
@@ -225,12 +232,14 @@ function clearData(portal, clrall = false) {
 
         allSaveData.splice(0, keepSaveDataIndex + 1);
     }
+    showHideUnusedGraphs();
 }
 function deleteSpecific() {
     var a = document.getElementById("deleteSpecificTextBox").value;
     if ("" != a)
         if (0 > parseInt(a)) clearData(Math.abs(a));
         else for (var b = allSaveData.length - 1; 0 <= b; b--) allSaveData[b].totalPortals == a && allSaveData.splice(b, 1);
+	showHideUnusedGraphs();
 }
 function autoToggleGraph() {
     game.options.displayed && toggleSettingsMenu();
@@ -270,16 +279,20 @@ function pushData() {
     var RgetPercent = (game.stats.heliumHour.value() / (game.global.totalRadonEarned - (game.global.radonLeftover + game.resources.radon.owned))) * 100;
     var Rlifetime = (game.resources.radon.owned / (game.global.totalRadonEarned - game.resources.radon.owned)) * 100;
 
+	if (game.global.challengeActive === 'Daily') {
+		var dailyString = getCurrentChallengePane().split('.');
+		var dailyDate = dailyString[0].substr(13).slice(0, 16);
+	}
     allSaveData.push({
         totalPortals: getTotalPortals(true),
         currentTime: new Date().getTime(),
         portalTime: game.global.portalTime,
         world: game.global.world,
-        challenge: game.global.challengeActive == 'Daily' ? game.global.challengeActive + " " + getDailyTimeString().toString().replace(/(\d{4})(\d{2})(\d+)/, '$1-$2-$3') : game.global.challengeActive,
+	challenge: game.global.challengeActive === 'Daily' ? dailyDate : game.global.challengeActive,
         voids: game.global.totalVoidMaps,
         heirlooms: { value: game.stats.totalHeirlooms.value, valueTotal: game.stats.totalHeirlooms.valueTotal },
         nullifium: recycleAllExtraHeirlooms(true),
-        coord: game.upgrades.Coordination.done,
+        coord: game.upgrades.Coordination.allowed - game.upgrades.Coordination.done,
         lastwarp: game.global.lastWarp,
         essence: getTotalDarkEssenceCount(),
         heliumOwned: game.resources.helium.owned,
@@ -299,6 +312,12 @@ function pushData() {
         rnhr: RgetPercent.toFixed(4),
         rnlife: Rlifetime.toFixed(4),
         s3: game.global.lastRadonPortal,
+	worshippers: game.jobs.Worshipper.owned,
+        bonfires: game.challenges.Hypothermia.bonfires,
+        embers: game.challenges.Hypothermia.embers,
+        wonders: game.challenges.Experience.wonders,
+        empower: game.global.challengeActive == "Daily" && typeof game.global.dailyChallenge.empower !== "undefined" ? game.global.dailyChallenge.empower.stacks : 0,
+        cruffys: game.challenges.Nurture.level,
         universe: game.global.universe,
         universeSelection: document.getElementById('universeSelection').options[document.getElementById('universeSelection').options.selectedIndex].value,
         u1graphSelection: document.getElementById('u1graphSelection').options[document.getElementById('u1graphSelection').options.selectedIndex].value,
@@ -306,8 +325,38 @@ function pushData() {
     });
     clearData(10);
     safeSetItems("allSaveData", JSON.stringify(allSaveData));
+    showHideUnusedGraphs();
 }
 
+function showHideUnusedGraphs() {
+    // Hide challenge graphs that are not in the saved data
+    const graphedChallenges = [...new Set(allSaveData.map((data) => data = data.challenge))];
+    const perChallengeGraphs = {Hypothermia: {graphs: ["Bonfires", "Embers"], universe: "u2"},
+                                Nurture: {graphs: ["Cruffys"], universe: "u2"},
+                                Experience: {graphs: ["Wonders"], universe: "u1"}};
+    for (const [challenge, data] of Object.entries(perChallengeGraphs)) {
+        const graphs = data.graphs;
+        const style = graphedChallenges.includes(challenge) ? "" : "none";
+        graphs.forEach((graph) => { document.querySelector(`#${data.universe}graphSelection [value=${graph}]`).style.display = style; })
+    }
+    // Hide specific graphs that are constant (either not unlocked yet, or maxed)
+    const emptyGraphs = {OverkillCells: {dataName: "overkill"},
+                         Worshippers: {universe: "u2"}, 
+                         "Fluffy XP": {dataName: "fluffy", universe: "u1"}, 
+                         "Fluffy XP PerHour": {dataName: "fluffy", universe: "u1"},
+                         Amalgamators: {dataName: "amals", universe: "u1"}, 
+                         Empower: {},
+                         }
+    for (const [graphName, data] of Object.entries(emptyGraphs)) {
+        const dataName = data.dataName ? data.dataName : graphName.toLowerCase();
+        const universes = data.universe ? [data.universe] : ["u1", "u2"]
+        for (universe of universes) {
+            const style = [...new Set(allSaveData.map((graphs) => graphs = graphs[dataName]))].length == 1 ? "none" : "";
+            document.querySelector(`#${universe}graphSelection [value="${graphName}"]`).style.display = style;
+        }
+
+    }
+}
 var graphAnal = [];
 function trackHourlyGraphAnalytics() {
     graphAnal.push({
@@ -745,7 +794,7 @@ function setGraphData(graph) {
             break;
         case "Coordinations":
             graphData = allPurposeGraph("coord", true, "number");
-            title = "Coordination History";
+            title = "Unpurchased Coordinations History";
             xTitle = "Zone";
             yTitle = "Coordination";
             yType = "Linear";
@@ -839,13 +888,6 @@ function setGraphData(graph) {
             yType = "Linear";
             xminFloor = 1;
             break;
-        case "Smithies":
-            graphData = allPurposeGraph("smithies", true, "number");
-            title = "Smithy History";
-            xTitle = "Zone";
-            yTitle = "Smithies";
-            yType = "Linear";
-            break; 
         case "OverkillCells":
             var currentPortal = -1;
             graphData = [];
@@ -877,6 +919,12 @@ function setGraphData(graph) {
             yTitle = "Overkilled Cells";
             yType = "Linear";
             break;
+        default:
+            graphData = allPurposeGraph(graph.toLowerCase(), true, "number");
+            title = `${graph} History`;
+            xTitle = "Zone";
+            yTitle = graph;
+            yType = "Linear";
     }
 
     function allPurposeGraph(item, extraChecks, typeCheck, funcToRun, useAccumulator) {

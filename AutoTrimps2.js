@@ -16,13 +16,11 @@ function ATscriptUnload(a) {
 }
 ATscriptLoad(modulepath, 'utils');
 
-//var isSteam = false;
-
 function initializeAutoTrimps() {
     loadPageVariables();
     ATscriptLoad('', 'SettingsGUI');
     ATscriptLoad('', 'Graphs');
-    ATmoduleList = ['import-export', 'query', 'calc', 'portal', 'upgrades', 'heirlooms', 'buildings', 'jobs', 'equipment', 'gather', 'stance', 'maps', 'breedtimer', 'dynprestige', 'fight', 'scryer', 'magmite', 'nature', 'other', 'perks', 'fight-info', 'performance', 'ab', 'MAZ'];
+    ATmoduleList = ['import-export', 'query', 'calc', 'portal', 'upgrades', 'heirlooms', 'buildings', 'jobs', 'equipment', 'gather', 'stance', 'mapfunctions', 'maps', 'breedtimer', 'dynprestige', 'fight', 'scryer', 'magmite', 'nature', 'other', 'perks', 'fight-info', 'performance', 'ab', 'MAZ'];
     for (var m in ATmoduleList) {
         ATscriptLoad(modulepath, ATmoduleList[m]);
     }
@@ -31,21 +29,21 @@ function initializeAutoTrimps() {
 
 var changelogList = [];
 changelogList.push({
+    date: "13/11/2022",
+    version: "v5.2.1",
+    description: "<b>Trimps v5.8.0</b> Added Smithy farming. Changed Scryer stuff. U1 Calc slightly more accurate. Changed some colours and setting descriptions like AutoHeirlooms. Let me know if something is broken. ",
+    isNew: true
+});
+changelogList.push({
+    date: "28/10/2022",
+    version: "v5.2.0",
+    description: "<b>Trimps v5.8.0</b> Changed U2 Automaps so there might be problems, let me know if there is. Autogiga, Better stance swap, U1 Calc fixed. ",
+    isNew: false
+});
+changelogList.push({
     date: "17/08/2022",
     version: "v5.1.1",
     description: "<b>Trimps v5.8.0</b> AutoShrine added. Daily Heirloom Swap added. Various bug fixes. ",
-    isNew: true
-});
-changelogList.push({
-    date: "01/08/2022",
-    version: "v5.1.0",
-    description: "<b>Trimps v5.8.0</b> Calc updated for 5.8. Some Mutation settings in combat. A few changes to ship farming so it always uses a LSC. ",
-    isNew: true
-});
-changelogList.push({
-    date: "16/05/2022",
-    version: "v5.0.0",
-    description: "<b>Trimps v5.7.1</b> Daily versions of settings added. Daily BW Raiding for U2 removed. Old Praiding for U2 removed. Added MaZ like inputs for various settings. Please check your settings in Maps\, Jobs\, and Daily tabs! Various bug fixes. Huge thanks to <b>August</b> for the base code for the MaZ like inputs! ",
     isNew: false
 });
 
@@ -133,6 +131,10 @@ var magmiteSpenderChanged = false;
 var lastHeliumZone = 0;
 var lastRadonZone = 0;
 
+//Get Gamma burst % value
+gammaBurstPct = (getHeirloomBonus("Shield", "gammaBurst") / 100) > 0 ? (getHeirloomBonus("Shield", "gammaBurst") / 100) : 1;
+shieldEquipped = game.global.ShieldEquipped.id;
+
 function mainLoop() {
     if (ATrunning == false) return;
     if (getPageSetting('PauseScript') || game.options.menu.pauseGame.enabled || game.global.viewingUpgrades) return;
@@ -173,9 +175,13 @@ function mainLoop() {
             setScienceNeeded();
             autoLevelEquipment();
         }
+        
+        //Heirloom Shield Swap Check
+		if (shieldEquipped !== game.global.ShieldEquipped.id) HeirloomShieldSwapped();
 
         //Core
         if (getPageSetting('AutoMaps') > 0 && game.global.mapsUnlocked) autoMap();
+	if (getPageSetting('automapsalways') == true && autoTrimpSettings.AutoMaps.value != 1) autoTrimpSettings.AutoMaps.value = 1;
         if (getPageSetting('showautomapstatus') == true) updateAutoMapsStatus();
         if (getPageSetting('ManualGather2') == 1) manualLabor2();
         if (getPageSetting('TrapTrimps') && game.global.trapBuildAllowed && game.global.trapBuildToggled == false) toggleAutoTrap();
@@ -191,11 +197,13 @@ function mainLoop() {
         if ((getPageSetting('Hshrine') == true) || (getPageSetting('Hdshrine') == 1) || (getPageSetting('Hdshrine') == 2)) autoshrine();
 
         //Buildings
+        if (!usingRealTimeOffline) {
         if (getPageSetting('BuyBuildingsNew') === 0 && getPageSetting('hidebuildings') == true) buyBuildings();
         else if (getPageSetting('BuyBuildingsNew') == 1) {
             buyBuildings();
             buyStorage();
         } else if (getPageSetting('BuyBuildingsNew') == 2) buyBuildings();
+	}
         else if (getPageSetting('BuyBuildingsNew') == 3) buyStorage();
         else if (getPageSetting('BuyBuildingsNew') == 4) {
             dynamicGyms();
@@ -273,6 +281,9 @@ function mainLoop() {
         if (!usingRealTimeOffline) {
             RsetScienceNeeded();
         }
+        
+        //Heirloom Shield Swap Check
+		if (shieldEquipped !== game.global.ShieldEquipped.id) HeirloomShieldSwapped();
 
         if (!(game.global.challengeActive == "Quest" && game.global.world > 5 && game.global.lastClearedCell < 90 && ([14, 24].indexOf(questcheck()) >= 0))) {
             if (getPageSetting('RBuyUpgradesNew') != 0) RbuyUpgrades();
@@ -281,6 +292,7 @@ function mainLoop() {
         //RCore
         if (getPageSetting('RAutoMaps') > 0 && game.global.mapsUnlocked) RautoMap();
         if (getPageSetting('Rshowautomapstatus') == true) RupdateAutoMapsStatus();
+	if (getPageSetting('Rautomapsalways') == true && autoTrimpSettings.RAutoMaps.value != 1) autoTrimpSettings.RAutoMaps.value = 1;
         if (getPageSetting('RManualGather2') == 1) RmanualLabor2();
         if (getPageSetting('RTrapTrimps') && game.global.trapBuildAllowed && game.global.trapBuildToggled == false) toggleAutoTrap();
         if (game.global.challengeActive == "Daily" && getPageSetting('buyradony') >= 1 && getDailyHeliumValue(countDailyWeight()) >= getPageSetting('buyradony') && game.global.b >= 100 && !game.singleRunBonuses.heliumy.owned) purchaseSingleRunBonus('heliumy');
@@ -325,7 +337,7 @@ function mainLoop() {
         if (getPageSetting('Requipon') == true && (!(game.global.challengeActive == "Quest" && game.global.world > 5 && game.global.lastClearedCell < 90 && ([11, 12, 21, 22].indexOf(questcheck()) >= 0)))) RautoEquip();
         if (getPageSetting('BetterAutoFight') == 1) betterAutoFight();
         if (getPageSetting('BetterAutoFight') == 2) betterAutoFight3();
-        if (game.global.world > 5 && game.global.challengeActive == "Daily" && getPageSetting('Ravoidempower') == true && typeof game.global.dailyChallenge.empower !== 'undefined' && !game.global.preMapsActive && !game.global.mapsActive && game.global.soldierHealth > 0) avoidempower();
+        if (game.global.world > 5 && game.global.challengeActive == "Daily" && getPageSetting('Ravoidempower') == true && typeof game.global.dailyChallenge.empower !== 'undefined' && !game.global.preMapsActive && !game.global.mapsActive && game.global.soldierHealth > 0) Ravoidempower();
         if (!game.global.fighting) {
             if (getPageSetting('Rfightforever') == 0) Rfightalways();
             else if (getPageSetting('Rfightforever') > 0 && RcalcHDratio() <= getPageSetting('Rfightforever')) Rfightalways();

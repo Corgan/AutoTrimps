@@ -580,6 +580,14 @@ function RbuyJobs() {
             allIn = "Scientist";
         }
     }
+    if (Rshouldsmithyfarm) {
+        var special = RsmithyCalc(false, false, true, false);
+        if (special == "swc" || special == "lwc") {
+            allIn = "Lumberjack";
+        } else if (special == "smc" || special == "lmc") {
+            allIn = "Miner";
+        }
+    }
     if (Rshouldtributefarm) {
         var tributefarmzone = getPageSetting('Rtributefarmzone');
         var tributefarmlevelindex = tributefarmzone.indexOf(game.global.world);

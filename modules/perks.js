@@ -1230,7 +1230,7 @@ RAutoPerks.applyCalculationsRespec = function(perks,remainingRadon){
         for(var i in perks) {
             var capitalized = RAutoPerks.capitaliseFirstLetter(perks[i].name);
             game.global.buyAmt = perks[i].radLevel;
-            if (getPortalUpgradePrice(capitalized) <= remainingRadon) {
+            if (getPortalUpgradePrice(capitalized) <= remainingRadon || perks[i].fixed) {
                 if (MODULES["perks"].RshowDetails)
                     debug("RAutoPerks-Respec Buying: " + capitalized + " " + perks[i].radLevel, "perks");
                 buyPortalUpgrade(capitalized);
@@ -1355,7 +1355,7 @@ RAutoPerks.initializePerks = function () {
     var trumps = new RAutoPerks.FixedPerk("trumps", 3, 30);
     var packrat = new RAutoPerks.FixedPerk("packrat", 3, 30);
     var hunger = new RAutoPerks.FixedPerk("hunger", 1000000, 30);
-    var observation = new RAutoPerks.FixedPerk("observation", 5000000000000000000, 1000);
+    var observation = new RAutoPerks.FixedPerk("observation", 5000000000000000000, 50);
     //var overkill = new RAutoPerks.FixedPerk("overkill", 1000000, 30);
     //variable
     var looting = new RAutoPerks.VariablePerk("looting", 1, false,             0, 0.05);
@@ -1375,11 +1375,13 @@ RAutoPerks.initializePerks = function () {
     var championism = new RAutoPerks.VariablePerk("championism", 1000000000, true,      14, 0.1);
     
     equality.exprate = 1.5;
+    observation.exprate = 2;
+    championism.exprate = 5;
     //scruffy
 	//no
     //tier2
 	//no
-    RAutoPerks.perkHolder = [range, agility, bait, trumps, packrat, hunger, /*overkill,*/ looting, toughness, power, motivation, pheromones, artisanistry, carpentry, prismal, resilience, criticality, tenacity, greed, frenzy, championism, equality];
+    RAutoPerks.perkHolder = [range, agility, bait, trumps, packrat, hunger, observation, /*overkill,*/ looting, toughness, power, motivation, pheromones, artisanistry, carpentry, prismal, resilience, criticality, tenacity, greed, frenzy, championism, equality];
     for(var i in RAutoPerks.perkHolder) {
         RAutoPerks.perkHolder[i].radLevel = 0;
         RAutoPerks.perkHolder[i].spent = 0;

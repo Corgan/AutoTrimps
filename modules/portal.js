@@ -501,7 +501,7 @@ function RdoPortal(challenge) {
     pushData();
     activatePortal();
     lastRadonZone = 0; RzonePostpone = 0;
-    Rresetmapvars();
+    RresetVars();
 }
 
 function isNextU1DailyWind() {
@@ -559,82 +559,3 @@ function isNextU1DailyWind() {
         else
             return false;
 }
-
-function Rresetmapvars() {
-RdoVoids=!1;
-RneedToVoid=!1;
-RneedPrestige=!1;
-RskippedPrestige=!1;
-RscryerStuck=!1;
-RshouldDoMaps=!1;
-RmapTimeEstimate=0;
-RlastMapWeWereIn=null;
-RdoMaxMapBonus=!1;
-RvanillaMapatZone=!1;
-Rtimefarm=!1;
-RadditionalCritMulti=2<getPlayerCritChance()?25:5;
-Rshouldtimefarm=!1;
-Rshouldtributefarm=!1;
-Rshoulddobogs=false;
-Rshouldcastle=false;
-Rshoulddopraid=false;
-Rshoulddoquest=false;
-Rquestequalityscale=false;
-Rquestshieldzone=0;
-RAMPpMap1=undefined;
-RAMPpMap2=undefined;
-RAMPpMap3=undefined;
-RAMPpMap4=undefined;
-RAMPpMap5=undefined;
-RAMPfragmappy=undefined;
-RAMPrepMap1=undefined;
-RAMPrepMap2=undefined;
-RAMPrepMap3=undefined;
-RAMPrepMap4=undefined;
-RAMPrepMap5=undefined;
-RAMPprefragmappy=undefined;
-RAMPmapbought1=false;
-RAMPmapbought2=false;
-RAMPmapbought3=false;
-RAMPmapbought4=false;
-RAMPmapbought5=false;
-RAMPfragmappybought=false;
-RAMPdone=false;
-RAMPfragfarming=false;
-Rshouldmayhem=0;
-Rmayhemextraglobal=-1;
-Rshouldpanda=0;
-Rpandaextraglobal=1;
-Rinsanityfarm=!1;
-Rshouldinsanityfarm=!1;
-Rinsanityfragfarming=false;
-insanityfragmappy=undefined;
-insanityprefragmappy=undefined;
-insanityfragmappybought=false;
-Rstormfarm=!1;
-Rshouldstormfarm=!1;
-Requipfarm=!1;
-Rshouldequipfarm=!1;
-Requipminusglobal=-1;
-Rshipfarm=!1;
-Rshouldshipfarm=!1;
-Rshipfragfarming=false;
-shipfragmappy=undefined;
-shipprefragmappy=undefined;
-shipfragmappybought=false;
-Ralchfarm=!1;
-Rshouldalchfarm=!1;
-Rshouldhypofarm=!1;
-Ralchfragfarming=false;
-alchfragmappy=undefined;
-alchprefragmappy=undefined;
-alchfragmappybought=false;
-Rhypofarm=!1;
-Rshouldhypofarm=!1;
-Rhypofragfarming=false;
-hypofragmappy=undefined;
-hypoprefragmappy=undefined;
-hypofragmappybought=false;
-Rhyposhouldwood=true;
-contractVoid=false;
-};

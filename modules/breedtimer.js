@@ -12,6 +12,84 @@ function trimpsEffectivelyEmployed() {
     return employedTrimps;
 }
 
+function breedingPS() {
+    //Init
+    var trimps = game.resources.trimps;
+    var breeding = new DecimalBreed(trimps.owned).minus(trimpsEffectivelyEmployed());
+
+    //Gets the modifier, then: 1.1x format -> 0.1 format -> 1.0 x breeding
+    return potencyMod().minus(1).mul(10).mul(breeding);
+}
+
+function potencyMod() {
+    //Init
+    var trimps = game.resources.trimps;
+    var potencyMod = new DecimalBreed(trimps.potency);
+
+    //Potency, Nurseries, Venimp, Broken Planet
+    if (game.upgrades.Potency.done > 0) potencyMod = potencyMod.mul(Math.pow(1.1, game.upgrades.Potency.done));
+    if (game.buildings.Nursery.owned > 0) potencyMod = potencyMod.mul(Math.pow(1.01, game.buildings.Nursery.owned));
+    if (game.unlocks.impCount.Venimp > 0) potencyMod = potencyMod.mul(Math.pow(1.003, game.unlocks.impCount.Venimp));
+    if (game.global.brokenPlanet) potencyMod = potencyMod.div(10);
+
+    //Pheromones
+    potencyMod = potencyMod.mul(1+ (game.portal.Pheromones.level * game.portal.Pheromones.modifier));
+
+    //Quick Trimps
+    if (game.singleRunBonuses.quickTrimps.owned) potencyMod = potencyMod.mul(2);
+
+    //Dailies
+    if (game.global.challengeActive == "Daily"){
+        //Dysfunctional
+        if (typeof game.global.dailyChallenge.dysfunctional !== 'undefined')
+            potencyMod = potencyMod.mul(dailyModifiers.dysfunctional.getMult(game.global.dailyChallenge.dysfunctional.strength));
+
+        //Toxic
+        if (typeof game.global.dailyChallenge.toxic !== 'undefined')
+            potencyMod = potencyMod.mul(dailyModifiers.toxic.getMult(game.global.dailyChallenge.toxic.strength, game.global.dailyChallenge.toxic.stacks));
+    }
+
+    //Toxicity
+    if (game.global.challengeActive == "Toxicity" && game.challenges.Toxicity.stacks > 0)
+        potencyMod = potencyMod.mul(Math.pow(game.challenges.Toxicity.stackMult, game.challenges.Toxicity.stacks));
+
+    //Void Maps (Slow Breed)
+    if (game.global.voidBuff == "slowBreed")
+        potencyMod = potencyMod.mul(0.2);
+
+    //Heirlooms
+    potencyMod = calcHeirloomBonusDecimal("Shield", "breedSpeed", potencyMod);
+
+    //Geneticists
+    if (game.jobs.Geneticist.owned > 0)
+        potencyMod = potencyMod.mul(Math.pow(.98, game.jobs.Geneticist.owned));
+
+    return potencyMod.div(10).add(1);
+}
+
+function breedTotalTime() {
+    //Init
+    var trimps = game.resources.trimps;
+    var trimpsMax = trimps.realMax();
+
+    //Calc
+    var maxBreedable = new DecimalBreed(trimpsMax).minus(trimpsEffectivelyEmployed());
+    var breeding = maxBreedable.minus(trimps.getCurrentSend());
+
+    return DecimalBreed.log10(maxBreedable.div(breeding)).div(DecimalBreed.log10(potencyMod())).div(10);
+}
+
+function breedTimeRemaining() {
+    //Init
+    var trimps = game.resources.trimps;
+    var trimpsMax = trimps.realMax();
+
+    //Calc
+    var maxBreedable = new DecimalBreed(trimpsMax).minus(trimpsEffectivelyEmployed());
+    var breeding = new DecimalBreed(trimps.owned).minus(trimpsEffectivelyEmployed());
+    return DecimalBreed.log10(maxBreedable.div(breeding)).div(DecimalBreed.log10(potencyMod())).div(10);
+}
+
 var DecimalBreed = Decimal.clone({precision: 30, rounding: 4});
 var missingTrimps = new DecimalBreed(0);
 function ATGA2() {

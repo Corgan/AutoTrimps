@@ -171,12 +171,19 @@ function autoMagmiteSpender() {
 function autoGenerator() {
 var defaultgenstate = getPageSetting('defaultgen');
 var beforefuelstate = getPageSetting('beforegen');
+var hybrid = game.permanentGeneratorUpgrades.Hybridization.owned;
+if (!hybrid && defaultgenstate == 2) {
+    defaultgenstate = 0;
+}
+if (!hybrid && beforefuelstate == 2) {
+    beforefuelstate = 0;
+}
   if (game.global.world < 230) return;
   if (game.global.dailyChallenge.seed && getPageSetting('AutoGenDC') == 1 && game.global.generatorMode != 1)
       changeGeneratorState(1);
   if (game.global.dailyChallenge.seed && getPageSetting('AutoGenDC') == 1 && game.global.generatorMode == 1)
       return;
-  if (game.global.dailyChallenge.seed && getPageSetting('AutoGenDC') == 2 && game.global.generatorMode != 2)
+  if (hybrid && game.global.dailyChallenge.seed && getPageSetting('AutoGenDC') == 2 && game.global.generatorMode != 2)
       changeGeneratorState(2);
   if (game.global.dailyChallenge.seed && getPageSetting('AutoGenDC') == 2 && game.global.generatorMode == 2)
       return;
@@ -184,7 +191,7 @@ var beforefuelstate = getPageSetting('beforegen');
       changeGeneratorState(1);
   if (game.global.runningChallengeSquared && getPageSetting('AutoGenC2') == 1 && game.global.generatorMode == 1)
       return;
-  if (game.global.runningChallengeSquared && getPageSetting('AutoGenC2') == 2 && game.global.generatorMode != 2)
+  if (hybrid && game.global.runningChallengeSquared && getPageSetting('AutoGenC2') == 2 && game.global.generatorMode != 2)
       changeGeneratorState(2);
   if (game.global.runningChallengeSquared && getPageSetting('AutoGenC2') == 2 && game.global.generatorMode == 2)
       return;

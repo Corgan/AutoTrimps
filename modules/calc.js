@@ -4,6 +4,29 @@ var trimpAA = 1;
 
 //Helium
 
+function addPoison(realDamage, zone) {
+    //Init
+    if (!zone) zone = game.global.world;
+
+    //Poison is inactive
+    if (getEmpowerment(zone) != "Poison") return 0;
+
+    //Real amount to be added in the next attack
+    if (realDamage) return game.empowerments.Poison.getDamage();
+
+    //Dynamically determines how much we are benefiting from poison based on Current Amount * Transfer Rate
+    if (getPageSetting("addpoison")) return game.empowerments["Poison"].getDamage() * getRetainModifier("Poison");
+
+    return 0;
+}
+
+function calcCorruptionScale(zone, base) {
+    var startPoint = (game.global.challengeActive == "Corrupted" || game.global.challengeActive == "Eradicated") ? 1 : 150;
+    var scales = Math.floor((zone - startPoint) / 6);
+    var realValue = base * Math.pow(1.05, scales);
+    return parseFloat(prettify(realValue));
+}
+
 function getTrimpAttack() {
     var dmg = 6;
     var equipmentList = ["Dagger", "Mace", "Polearm", "Battleaxe", "Greatsword", "Arbalest"];
@@ -54,6 +77,11 @@ function calcOurHealth(stance) {
     if (game.portal.Resilience.level > 0) {
         health *= (Math.pow(game.portal.Resilience.modifier + 1, game.portal.Resilience.level));
     }
+	
+    health *= game.challenges.Mayhem.getTrimpMult();
+
+    health *= game.challenges.Pandemonium.getTrimpMult();
+
     var geneticist = game.jobs.Geneticist;
     if (geneticist.owned > 0) {
         health *= (Math.pow(1.01, game.global.lastLowGen));
@@ -237,6 +265,11 @@ function calcOurDmg(minMaxAvg, incStance, incFlucts) {
     if (game.talents.herbalist.purchased) {
         number *= game.talents.herbalist.getBonus();
     }
+
+    number *= game.challenges.Mayhem.getTrimpMult();
+
+    number *= game.challenges.Pandemonium.getTrimpMult();
+
     if (game.global.sugarRush > 0) {
         number *= sugarRush.getAttackStrength();
     }
@@ -288,8 +321,16 @@ function calcOurDmg(minMaxAvg, incStance, incFlucts) {
     if (Fluffy.isActive()) {
         number *= Fluffy.getDamageModifier();
     }
-    if (getHeirloomBonus("Shield", "gammaBurst") > 0 && (calcOurHealth() / (calcBadGuyDmg(null, getEnemyMaxAttack(game.global.world, 50, 'Snimp', 1.0))) >= 5)) {
-        number *= ((getHeirloomBonus("Shield", "gammaBurst") / 100) + 1) / 5;
+    // Gamma Burst
+    if (autoBattle.oneTimers.Burstier.owned == false) {
+        if (gammaBurstPct > 0 && (calcOurHealth() / (calcBadGuyDmg(null, getEnemyMaxAttack(game.global.world, 50, 'Snimp', 1.0))) >= 5)) {
+		number *= (gammaBurstPct + 1) / 5;
+	}
+    }
+    if (autoBattle.oneTimers.Burstier.owned == true) {
+        if (gammaBurstPct > 0 && (calcOurHealth() / (calcBadGuyDmg(null, getEnemyMaxAttack(game.global.world, 50, 'Snimp', 1.0))) >= 4)) {
+		number *= (gammaBurstPct + 1) / 4;
+	}
     }
 
 
@@ -333,6 +374,192 @@ function calcDailyAttackMod(number) {
         }
     }
     return number;
+}
+
+function badGuyChallengeMult() {
+    var number=1;
+
+    //WARNING! Something is afoot!
+    //A few challenges
+    if      (game.global.challengeActive == "Meditate")   number *= 1.5;
+    else if (game.global.challengeActive == "Watch")      number *= 1.25;
+    else if (game.global.challengeActive == "Corrupted")  number *= 3;
+    else if (game.global.challengeActive == "Domination") number *= 2.5;
+    else if (game.global.challengeActive == "Coordinate") number *= getBadCoordLevel();
+    else if (game.global.challengeActive == "Scientist" && getScientistLevel() == 5) number *= 10;
+
+    //Obliterated and Eradicated
+    else if (game.global.challengeActive == "Obliterated" || game.global.challengeActive == "Eradicated"){
+        var oblitMult = (game.global.challengeActive == "Eradicated") ? game.challenges.Eradicated.scaleModifier : 1e12;
+        var zoneModifier = Math.floor(game.global.world / game.challenges[game.global.challengeActive].zoneScaleFreq);
+        oblitMult *= Math.pow(game.challenges[game.global.challengeActive].zoneScaling, zoneModifier);
+        number *= oblitMult
+    }
+
+    return number;
+}
+
+function badGuyCritMult(enemy, critPower=2, block, health) {
+    //Pre-Init
+    if (getPageSetting('IgnoreCrits') == 2) return 1;
+    if (!enemy) enemy = getCurrentEnemy();
+    if (!enemy || critPower <= 0) return 1;
+    if (!block) block = game.global.soldierCurrentBlock;
+    if (!health) health = game.global.soldierHealth;
+
+    //Init
+    var regular=1, challenge=1;
+
+    //Non-challenge crits
+    if      (enemy.corrupted == 'corruptCrit') regular = 5;
+    else if (enemy.corrupted == 'healthyCrit') regular = 7;
+    else if (game.global.voidBuff == 'getCrit' && getPageSetting('IgnoreCrits') != 1) regular = 5;
+
+    //Challenge crits
+    var crushed = game.global.challengeActive == "Crushed";
+    var critDaily = game.global.challengeActive == "Daily" && typeof game.global.dailyChallenge.crits !== 'undefined';
+
+    //Challenge multiplier
+    if (critDaily) challenge = dailyModifiers.crits.getMult(game.global.dailyChallenge.crits.strength);
+    else if (crushed && health > block) challenge = 5;
+
+    //Result -- Yep. Crits may crit! Yey!
+    if (critPower == 2) return regular * challenge;
+    else return Math.max(regular, challenge);
+}
+
+function calcEnemyBaseAttack(type, zone, cell, name) {
+    //Pre-Init
+    if (!type) type = (!game.global.mapsActive) ? "world" : (getCurrentMapObject().location == "Void" ? "void" : "map");
+    if (!zone) zone = (type == "world" || !game.global.mapsActive) ? game.global.world : getCurrentMapObject().level;
+    if (!cell) cell = (type == "world" || !game.global.mapsActive) ? getCurrentWorldCell().level : (getCurrentMapCell() ? getCurrentMapCell().level : 1);
+    if (!name) name = getCurrentEnemy() ? getCurrentEnemy().name : "Snimp";
+
+    //Init
+    var attack = 50 * Math.sqrt(zone) * Math.pow(3.27, zone/2) - 10;
+
+    //Zone 1
+    if (zone == 1) {
+        attack *= 0.35;
+        attack = (0.2 * attack) + (0.75 * attack * (cell / 100));
+    }
+
+    //Zone 2
+    else if (zone == 2) {
+        attack *= 0.5;
+        attack = (0.32 * attack) + (0.68 * attack * (cell / 100));
+    }
+
+    //Before Breaking the Planet
+    else if (zone < 60) {
+        attack = (0.375 * attack) + (0.7 * attack * (cell / 100));
+        attack *= 0.85;
+    }
+
+    //After Breaking the Planet
+    else {
+        attack = (0.4 * attack) + (0.9 * attack * (cell / 100));
+        attack *= Math.pow(1.15, zone - 59);
+    }
+
+    //Maps
+    if (zone > 5 && type != "world") attack *= 1.1;
+
+    //Specific Imp
+    if (name) attack *= game.badGuys[name].attack;
+
+    return Math.floor(attack);
+}
+
+
+function calcEnemyAttackCore(type, zone, cell, name, minOrMax, customAttack) {
+    //Pre-Init
+    if (!type) type = (!game.global.mapsActive) ? "world" : (getCurrentMapObject().location == "Void" ? "void" : "map");
+    if (!zone) zone = (type == "world" || !game.global.mapsActive) ? game.global.world : getCurrentMapObject().level;
+    if (!cell) cell = (type == "world" || !game.global.mapsActive) ? getCurrentWorldCell().level : (getCurrentMapCell() ? getCurrentMapCell().level : 1);
+    if (!name) name = getCurrentEnemy() ? getCurrentEnemy().name : "Snimp";
+
+    //Init
+    var attack = calcEnemyBaseAttack(type, zone, cell, name);
+
+    //Spire - Overrides the base attack number
+    if (type == "world" && game.global.spireActive) attack = calcSpire(99, "Snimp", "attack");
+
+    //Map and Void Corruption
+    if (type != "world") {
+        //Corruption
+        var corruptionScale = calcCorruptionScale(game.global.world, 3);
+        if (mutations.Magma.active()) attack *= corruptionScale / (type == "void" ? 1 : 2);
+        else if (type == "void" && mutations.Corruption.active()) attack *= corruptionScale / 2;
+    }
+
+    //Use custom values instead
+    if (customAttack) attack = customAttack;
+
+    //WARNING! Check every challenge!
+    //A few challenges
+    if      (game.global.challengeActive == "Meditate")   attack *= 1.5;
+    else if (game.global.challengeActive == "Watch")      attack *= 1.25;
+    else if (game.global.challengeActive == "Corrupted")  attack *= 3;
+    else if (game.global.challengeActive == "Scientist" && getScientistLevel() == 5) attack *= 10;
+
+    //Coordinate
+    if (game.global.challengeActive == "Coordinate") {
+        var amt = 1;
+        for (var i=1; i<zone; i++) amt = Math.ceil(amt * 1.25);
+        attack *= amt;
+    }
+
+    //Dailies
+    if (game.global.challengeActive == "Daily") {
+        //Bad Strength
+        if (typeof game.global.dailyChallenge.badStrength !== "undefined")
+            attack *= dailyModifiers.badStrength.getMult(game.global.dailyChallenge.badStrength.strength);
+
+        //Bad Map Strength
+        if (typeof game.global.dailyChallenge.badMapStrength !== "undefined" && type != "world")
+            attack *= dailyModifiers.badMapStrength.getMult(game.global.dailyChallenge.badMapStrength.strength);
+
+        //Bloodthirsty
+        if (typeof game.global.dailyChallenge.bloodthirst !== 'undefined')
+            attack *= dailyModifiers.bloodthirst.getMult(game.global.dailyChallenge.bloodthirst.strength, game.global.dailyChallenge.bloodthirst.stacks);
+
+        //Empower
+        if (typeof game.global.dailyChallenge.empower !== "undefined")
+            attack *= dailyModifiers.empower.getMult(game.global.dailyChallenge.empower.strength, game.global.dailyChallenge.empower.stacks);
+    }
+
+    //Obliterated and Eradicated
+    else if (game.global.challengeActive == "Obliterated" || game.global.challengeActive == "Eradicated") {
+        var oblitMult = (game.global.challengeActive == "Eradicated") ? game.challenges.Eradicated.scaleModifier : 1e12;
+        var zoneModifier = Math.floor(game.global.world / game.challenges[game.global.challengeActive].zoneScaleFreq);
+        oblitMult *= Math.pow(game.challenges[game.global.challengeActive].zoneScaling, zoneModifier);
+        attack *= oblitMult;
+    }
+
+    return minOrMax ? 0.8 * attack : 1.2 * attack;
+}
+
+function calcSpecificEnemyAttack(critPower=2, customBlock, customHealth) {
+    //Init
+    var enemy = getCurrentEnemy();
+    if (!enemy) return 1;
+
+    //Init
+    var attack  = calcEnemyAttackCore(undefined, undefined, undefined, undefined, undefined, enemy.attack);
+        attack *= badGuyCritMult(enemy, critPower, customBlock, customHealth);
+
+    //Challenges - considers the actual scenario for this enemy
+    if (game.global.challengeActive == "Nom" && typeof enemy.nomStacks !== 'undefined') attack *= Math.pow(1.25, enemy.nomStacks)
+    if (game.global.challengeActive == "Lead") attack *= 1 + (0.04 * game.challenges.Lead.stacks);
+
+    //Magneto Shriek
+    if (game.global.usingShriek) attack *= game.mapUnlocks.roboTrimp.getShriekValue();
+
+    //Ice
+    if (getEmpowerment() == "Ice") attack *= game.empowerments.Ice.getCombatModifier();
+
+    return Math.ceil(attack);
 }
 
 function calcSpire(cell, name, what) {
@@ -490,6 +717,112 @@ function calcEnemyHealth(world, map) {
     return health;
 }
 
+function calcEnemyHealthCore(type, zone, cell, name, customHealth) {
+    //Pre-Init
+    if (!type) type = (!game.global.mapsActive) ? "world" : (getCurrentMapObject().location == "Void" ? "void" : "map");
+    if (!zone) zone = (type == "world" || !game.global.mapsActive) ? game.global.world : getCurrentMapObject().level;
+    if (!cell) cell = (type == "world" || !game.global.mapsActive) ? getCurrentWorldCell().level : (getCurrentMapCell() ? getCurrentMapCell().level : 1);
+    if (!name) name = getCurrentEnemy() ? getCurrentEnemy().name : "Turtlimp";
+
+    //Init
+    var health = calcEnemyBaseHealth(zone, cell, name);
+
+    //Spire - Overrides the base health number
+    if (type == "world" && game.global.spireActive) health = calcSpire(99, "Snimp", "healh");
+
+    //Map and Void Corruption
+    if (type != "world") {
+        //Corruption
+        var corruptionScale = calcCorruptionScale(game.global.world, 10);
+        if (mutations.Magma.active()) health *= corruptionScale / (type == "void" ? 1 : 2);
+        else if (type == "void" && mutations.Corruption.active()) health *= corruptionScale / 2;
+    }
+
+    //Use a custom value instead
+    if (customHealth) health = customHealth;
+
+    //Challenges
+    if (game.global.challengeActive == "Balance")    health *= 2;
+    if (game.global.challengeActive == "Meditate")   health *= 2;
+    if (game.global.challengeActive == "Toxicity")   health *= 2;
+    if (game.global.challengeActive == "Life")       health *= 11;
+
+    //Coordinate
+    if (game.global.challengeActive == "Coordinate") {
+        var amt = 1;
+        for (var i=1; i<zone; i++) amt = Math.ceil(amt * 1.25);
+        health *= amt;
+    }
+
+    //Dailies
+    if (game.global.challengeActive == "Daily") {
+        //Empower
+        if (typeof game.global.dailyChallenge.empower !== "undefined")
+            health *= dailyModifiers.empower.getMult(game.global.dailyChallenge.empower.strength, game.global.dailyChallenge.empower.stacks)
+
+        //Bad Health
+        if (typeof game.global.dailyChallenge.badHealth !== "undefined")
+            health *= dailyModifiers.badHealth.getMult(game.global.dailyChallenge.badHealth.strength);
+
+        //Bad Map Health
+        if (typeof game.global.dailyChallenge.badMapHealth !== "undefined" && type != "world")
+            health *= dailyModifiers.badMapHealth.getMult(game.global.dailyChallenge.badMapHealth.strength);
+    }
+
+    //Obliterated + Eradicated
+    if (game.global.challengeActive == "Obliterated" || game.global.challengeActive == "Eradicated") {
+        var oblitMult = (game.global.challengeActive == "Eradicated") ? game.challenges.Eradicated.scaleModifier : 1e12;
+        var zoneModifier = Math.floor(game.global.world / game.challenges[game.global.challengeActive].zoneScaleFreq);
+        oblitMult *= Math.pow(game.challenges[game.global.challengeActive].zoneScaling, zoneModifier);
+        health *= oblitMult;
+    }
+
+    return health;
+}
+
+function calcSpecificEnemyHealth(type, zone, cell, forcedName) {
+    //Pre-Init
+    if (!type) type = (!game.global.mapsActive) ? "world" : (getCurrentMapObject().location == "Void" ? "void" : "map");
+    if (!zone) zone = (type == "world" || !game.global.mapsActive) ? game.global.world : getCurrentMapObject().level;
+    if (!cell) cell = (type == "world" || !game.global.mapsActive) ? getCurrentWorldCell().level : (getCurrentMapCell() ? getCurrentMapCell().level : 1);
+
+    //Select our enemy
+    var enemy = (type == "world") ? game.global.gridArray[cell-1] : game.global.mapGridArray[cell-1];
+    if (!enemy) return -1;
+
+    //Init
+    var corrupt = enemy.corrupted && enemy.corrupted != "none";
+    var healthy = corrupt && enemy.corrupted.startsWith("healthy");
+    var name = corrupt ? "Chimp" : (forcedName) ? forcedName : enemy.name;
+    var health = calcEnemyHealthCore(type, zone, cell, name);
+
+    //Challenges - considers the actual scenario for this enemy
+    if (game.global.challengeActive == "Lead") health *= 1 + (0.04 * game.challenges.Lead.stacks);
+    if (game.global.challengeActive == "Domination") {
+        var lastCell = (type == "world") ? 100 : game.global.mapGridArray.length;
+        if (cell < lastCell) health /= 10;
+        else health *= 7.5;
+    }
+
+    //Map and Void Difficulty
+    if (type != "world") health *= getCurrentMapObject().difficulty;
+
+    //Corruption
+    else if (type == "world" && !healthy && (corrupt || mutations.Corruption.active() && cell == 100) && !game.global.spireActive) {
+        health *= calcCorruptionScale(zone, 10);
+        if (enemy.corrupted == "corruptTough") health *= 5;
+    }
+
+    //Healthy
+    else if (type == "world" && healthy) {
+        health *= calcCorruptionScale(zone, 14);
+        if (enemy.corrupted == "healthyTough") health *= 7.5;
+    }
+
+    return health;
+}
+
+
 function calcHDratio(map) {
     var ratio = 0;
     var ourBaseDamage = calcOurDmg("avg", false, true);
@@ -621,6 +954,16 @@ function calcCurrentStance() {
         }
     }
 }
+
+function calcBaseDamageInX() {
+    baseMinDamage = calcOurDmg("min", false, false);
+    baseMaxDamage = calcOurDmg("max", false, false);
+    baseDamage = calcOurDmg("avg", false, false);
+    baseHealth = calcOurHealth(false);
+    baseBlock  = calcOurBlock(false);
+}
+
+//Radon
 
 function rMutationAttack(cell) {
     var baseAttack;
@@ -863,10 +1206,14 @@ function RcalcOurDmg(minMaxAvg, equality) {
 
     // Gamma Burst
     if (autoBattle.oneTimers.Burstier.owned == false) {
-        if (getHeirloomBonus("Shield", "gammaBurst") > 0 && (RcalcOurHealth() / (RcalcBadGuyDmg(null, RgetEnemyMaxAttack(game.global.world, 50, 'Snimp', 1.0))) >= 5)) number *= 1 + (getHeirloomBonus("Shield", "gammaBurst") / 100) / 5;
+        if (gammaBurstPct > 0 && (RcalcOurHealth() / (RcalcBadGuyDmg(null, RgetEnemyMaxAttack(game.global.world, 50, 'Snimp', 1.0))) >= 5)) {
+		number *= (gammaBurstPct + 1) / 5;
+	}
     }
     if (autoBattle.oneTimers.Burstier.owned == true) {
-        if (getHeirloomBonus("Shield", "gammaBurst") > 0 && (RcalcOurHealth() / (RcalcBadGuyDmg(null, RgetEnemyMaxAttack(game.global.world, 50, 'Snimp', 1.0))) >= 4)) number *= 1 + (getHeirloomBonus("Shield", "gammaBurst") / 100) / 4;
+        if (gammaBurstPct > 0 && (RcalcOurHealth() / (RcalcBadGuyDmg(null, RgetEnemyMaxAttack(game.global.world, 50, 'Snimp', 1.0))) >= 4)) {
+		number *= (gammaBurstPct + 1) / 4;
+	}
     }
 
     // Average out crit damage
@@ -889,6 +1236,7 @@ function RcalcOurHealth() {
     //Health
 
     var health = 50;
+
     if (game.resources.trimps.maxSoldiers > 0) {
         var equipmentList = ["Shield", "Boots", "Helmet", "Pants", "Shoulderguards", "Breastplate", "Gambeson"];
         for (var i = 0; i < equipmentList.length; i++) {
@@ -898,52 +1246,74 @@ function RcalcOurHealth() {
             health += healthBonus * level;
         }
     }
+
     health *= game.resources.trimps.maxSoldiers;
     if (game.buildings.Smithy.owned > 0) {
-        health *= Math.pow(1.25, game.buildings.Smithy.owned);
+        health *= game.buildings.Smithy.getMult()
     }
+
     //Antenna Array
     health *= game.buildings.Antenna.owned >= 10 ? game.jobs.Meteorologist.getExtraMult() : 1;
+    
     if (game.portal.Toughness.radLevel > 0) {
         health *= ((game.portal.Toughness.radLevel * game.portal.Toughness.modifier) + 1);
     }
+
     if (game.portal.Resilience.radLevel > 0) {
         health *= (Math.pow(game.portal.Resilience.modifier + 1, game.portal.Resilience.radLevel));
     }
-    if (game.portal.Observation.radLevel > 0) {
-        health *= game.portal.Observation.getMult();
-    }
-    if (game.portal.Championism.radLevel > 0) {
-        health *= game.portal.Championism.getMult();
-    }
+
     if (Fluffy.isRewardActive("healthy")) {
         health *= 1.5;
     }
-    health = calcHeirloomBonus("Shield", "trimpHealth", health);
-    if (game.goldenUpgrades.Battle.currentBonus > 0) {
-        health *= game.goldenUpgrades.Battle.currentBonus + 1;
+
+    if (game.portal.Observation.radLevel > 0) {
+        health *= game.portal.Observation.getMult();
     }
-    if (game.global.totalSquaredReward > 0) {
-        health *= (1 + (game.global.totalSquaredReward / 100));
-    }
-    if (game.global.challengeActive == "Revenge" && game.challenges.Revenge.stacks > 0) {
-        health *= game.challenges.Revenge.getMult();
-    }
-    if (game.global.challengeActive == "Wither" && game.challenges.Wither.trimpStacks > 0) {
-        health *= game.challenges.Wither.getTrimpHealthMult();
-    }
+
     if (game.global.mayhemCompletions > 0) {
         health *= game.challenges.Mayhem.getTrimpMult();
     }
+
     if (game.global.pandCompletions > 0) {
         health *= game.challenges.Pandemonium.getTrimpMult();
     }
+
+    //AutoBattle
+    health *= autoBattle.bonuses.Stats.getMult();
+
+    //Shield
+    health = calcHeirloomBonus("Shield", "trimpHealth", health);
+
+    if (game.portal.Championism.radLevel > 0) {
+        health *= game.portal.Championism.getMult();
+    }
+
+    if (game.goldenUpgrades.Battle.currentBonus > 0) {
+        health *= game.goldenUpgrades.Battle.currentBonus + 1;
+    }
+
+    if (game.global.totalSquaredReward > 0) {
+        health *= (1 + (game.global.totalSquaredReward / 100));
+    }
+
     if (u2Mutations.tree.Health.purchased)	{
 		health *= 1.5;
     }
+
+    //Challenges
+    if (game.global.challengeActive == "Revenge" && game.challenges.Revenge.stacks > 0) {
+        health *= game.challenges.Revenge.getMult();
+    }
+
+    if (game.global.challengeActive == "Wither" && game.challenges.Wither.trimpStacks > 0) {
+        health *= game.challenges.Wither.getTrimpHealthMult();
+    }
+
     if (game.global.challengeActive == "Insanity") {
         health *= game.challenges.Insanity.getHealthMult();
     }
+
     if (game.global.challengeActive == "Berserk") {
         if (game.challenges.Berserk.frenzyStacks > 0) {
             health *= 0.5;
@@ -952,19 +1322,16 @@ function RcalcOurHealth() {
             health *= game.challenges.Berserk.getHealthMult(true);
         }
     }
+
     if (game.challenges.Nurture.boostsActive() == true) {
         health *= game.challenges.Nurture.getStatBoost();
     }
 
-    //Alchemy Mult
     health *= alchObj.getPotionEffect('Potion of Strength');
 	
     if (game.global.challengeActive === 'Smithless') {
 	if (game.challenges.Smithless.fakeSmithies > 0) health *= Math.pow(1.25, game.challenges.Smithless.fakeSmithies);
     }
-
-    //AutoBattle
-    health *= autoBattle.bonuses.Stats.getMult();
 
     if (typeof game.global.dailyChallenge.pressure !== 'undefined') {
         health *= (dailyModifiers.pressure.getMult(game.global.dailyChallenge.pressure.strength, game.global.dailyChallenge.pressure.stacks));
